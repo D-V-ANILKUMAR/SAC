@@ -1,0 +1,3 @@
+Flask>=2.2.5
+gunicorn>=20.1.0
+# Note: SQLite is builtin; add any other packages you need below
