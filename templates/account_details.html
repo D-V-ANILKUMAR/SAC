@@ -1,0 +1,59 @@
+{% extends "layout.html" %} {% block content %}
+<h2>Account Details</h2>
+{% if mediators %}
+<h3>Mediators</h3>
+<table border="1">
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Mobile</th>
+  </tr>
+  {% for m in mediators %}
+  <tr>
+    <td>{{m[0]}}</td>
+    <td>{{m[1]}}</td>
+    <td>{{m[2]}}</td>
+    <td>{{m[3]}}</td>
+    <td>
+      <form
+        method="POST"
+        action="{{ url_for('delete_user') }}"
+        onsubmit="return confirm('Delete this mediator and all associated data?')"
+      >
+        <input type="hidden" name="user_id" value="{{ m[0] }}" />
+        <button type="submit" class="btn-danger">Delete</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %} {% if students %}
+<h3>Students</h3>
+<table border="1">
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Mobile</th>
+  </tr>
+  {% for s in students %}
+  <tr>
+    <td>{{s[0]}}</td>
+    <td>{{s[1]}}</td>
+    <td>{{s[2]}}</td>
+    <td>{{s[3]}}</td>
+    <td>
+      <form
+        method="POST"
+        action="{{ url_for('delete_user') }}"
+        onsubmit="return confirm('Delete this student and all associated data?')"
+      >
+        <input type="hidden" name="user_id" value="{{ s[0] }}" />
+        <button type="submit" class="btn-danger">Delete</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %} {% endblock %}

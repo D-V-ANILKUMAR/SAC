@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>Mediator Home</h2>
+<p>Welcome {{name}}</p>
+<ul>
+    <li><a href="{{ url_for('create_student_mediator') }}">Create Student</a></li>
+    <li><a href="{{ url_for('account_details_mediator') }}">View Students</a></li>
+    <li><a href="{{ url_for('create_exam_mediator') }}">Create Exam</a></li>
+    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+</ul>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "layout.html" %} {% block content %}
+<div class="container">
+  <h2>Admin Dashboard</h2>
+  <p>Welcome, {{ name }}!</p>
+
+  <div class="dashboard">
+    <div class="card">
+      <div>Create Mediator</div>
+      <a href="{{ url_for('create_mediator') }}">Open</a>
+    </div>
+    <div class="card">
+      <div>Create Student</div>
+      <a href="{{ url_for('create_student_admin') }}">Open</a>
+    </div>
+    <div class="card">
+      <div>Account Details</div>
+      <a href="{{ url_for('account_details_admin') }}">Open</a>
+    </div>
+    <div class="card">
+      <div>Create Exam</div>
+      <a href="{{ url_for('create_exam') }}">Open</a>
+    </div>
+    <div class="card">
+      <div>Logout</div>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

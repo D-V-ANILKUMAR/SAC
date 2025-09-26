@@ -1,0 +1,51 @@
+{% extends "layout.html" %} {% block content %}
+<div class="container">
+  <h2>{{ exam[1] }}</h2>
+  <p>Duration: {{ exam[2] }} minutes</p>
+
+  <form method="POST" id="examForm">
+    {% for q in questions %}
+    <div class="question">
+      <p><strong>{{ loop.index }}. {{ q[2] }}</strong></p>
+      {% if q[3] %}
+      <img
+        src="{{ url_for('static', filename='uploads/' ~ q[3]) }}"
+        style="max-width: 300px; margin-bottom: 10px"
+      /><br />
+      {% endif %}
+      <label
+        ><input type="radio" name="q{{ q[0] }}" value="{{ q[4] }}" required />
+        {{ q[4] }}</label
+      ><br />
+      <label
+        ><input type="radio" name="q{{ q[0] }}" value="{{ q[5] }}" required />
+        {{ q[5] }}</label
+      ><br />
+      <label
+        ><input type="radio" name="q{{ q[0] }}" value="{{ q[6] }}" required />
+        {{ q[6] }}</label
+      ><br />
+      <label
+        ><input type="radio" name="q{{ q[0] }}" value="{{ q[7] }}" required />
+        {{ q[7] }}</label
+      >
+    </div>
+    <hr />
+    {% endfor %}
+
+    <button type="submit">Submit Exam</button>
+  </form>
+</div>
+
+<!-- JS Scripts -->
+<script src="{{ url_for('static', filename='js/exam_timer.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tab_control.js') }}"></script>
+<script>
+  // Start exam timer automatically
+  startTimer({{ exam[2] }}, 'examForm');
+
+  // Enforce tab switch limit
+  setTabSwitchLimit({{ tab_limit }}, 'examForm');
+</script>
+
+{% endblock %}

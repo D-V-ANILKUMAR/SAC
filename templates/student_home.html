@@ -1,0 +1,22 @@
+{% extends "layout.html" %} {% block content %}
+<div class="container">
+  <h2>Student Home</h2>
+  <p>Welcome {{name}}</p>
+
+  <h3>Available Exams</h3>
+  <div class="dashboard">
+    {% for exam in exams %}
+    <div class="card">
+      <div style="font-size: 18px">{{ exam[1] }}</div>
+      <div style="margin-top: 8px">
+        <a href="{{ url_for('take_exam', exam_id=exam[0]) }}">Take Exam</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top: 20px">
+    <a href="{{ url_for('logout') }}">Logout</a>
+  </div>
+</div>
+{% endblock %}
