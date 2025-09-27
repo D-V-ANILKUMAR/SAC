@@ -159,21 +159,279 @@ def logout():
     return redirect(url_for('login'))
 
 # --------------------
-# Admin / Mediator Home
+# Admin Routes
 # --------------------
 @app.route('/admin/home')
 def admin_home():
-    if session.get('role')!='admin': return redirect(url_for('login'))
+    if session.get('role')!='admin': 
+        return redirect(url_for('login'))
     return render_template('admin_home.html', name=session['name'])
+# --------------------
+# Admin Routes (Add these to your existing admin routes section)
+# --------------------
 
+@app.route('/admin/create_exam', methods=['GET','POST'])
+def create_exam():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    if request.method=='POST':
+        title = request.form['title']
+        duration = int(request.form['duration'])
+        attempts_allowed = int(request.form.get('attempts_allowed', 1))
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "INSERT INTO exams (title,duration,created_by,attempts_allowed) VALUES (%s,%s,%s,%s) RETURNING id",
+                (title,duration,session['user_id'],attempts_allowed)
+            )
+            exam_id = cur.fetchone()[0]
+            questions_count = int(request.form['qcount'])
+            for i in range(1, questions_count+1):
+                question = request.form[f'question{i}']
+                opt1 = request.form[f'opt1_{i}']
+                opt2 = request.form[f'opt2_{i}']
+                opt3 = request.form[f'opt3_{i}']
+                opt4 = request.form[f'opt4_{i}']
+                answer = request.form[f'answer{i}']
+                img_file = request.files.get(f'image{i}')
+                filename = None
+                if img_file and img_file.filename != '':
+                    filename = secure_filename(img_file.filename)
+                    img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                cur.execute(
+                    "INSERT INTO questions (exam_id,question,image,option1,option2,option3,option4,answer) "
+                    "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                    (exam_id,question,filename,opt1,opt2,opt3,opt4,answer)
+                )
+            conn.commit()
+            flash("Exam created successfully!")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error: {e}")
+        finally:
+            cur.close()
+            conn.close()
+        return redirect(url_for('admin_home'))
+    return render_template('create_exam_admin.html')
+
+@app.route('/admin/submissions')
+def admin_submissions():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT s.*, u.name as student_name, e.title as exam_title 
+        FROM submissions s 
+        JOIN users u ON s.student_id = u.id 
+        JOIN exams e ON s.exam_id = e.id 
+        ORDER BY s.submitted_at DESC
+    ''')
+    submissions = cur.fetchall()
+    conn.close()
+    return render_template('admin_submissions.html', submissions=submissions)
+
+@app.route('/admin/create_mediator', methods=['GET','POST'])
+def create_mediator():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        mobile = request.form['mobile']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "INSERT INTO users (name,email,mobile,password,role) VALUES (%s,%s,%s,%s,'mediator')",
+                (name,email,mobile,password)
+            )
+            conn.commit()
+            flash("Mediator created successfully!")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error creating mediator: {e}")
+        finally:
+            cur.close()
+            conn.close()
+        return redirect(url_for('admin_home'))
+
+    return render_template('create_mediator.html')
+
+@app.route('/admin/create_student', methods=['GET','POST'])
+def create_student_admin():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        mobile = request.form['mobile']
+        password = request.form['password']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "INSERT INTO users (name,email,mobile,password,role) VALUES (%s,%s,%s,%s,'student')",
+                (name,email,mobile,password)
+            )
+            conn.commit()
+            flash("Student created successfully!")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error creating student: {e}")
+        finally:
+            cur.close()
+            conn.close()
+        return redirect(url_for('admin_home'))
+
+    return render_template('create_student_admin.html')
+
+@app.route('/admin/account_details')
+def account_details_admin():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id,name,email,mobile,password,role FROM users")
+    users = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('account_details_admin.html', users=users)
+
+@app.route('/admin/manage_exams')
+def manage_exams_admin():
+    if session.get('role') != 'admin' :
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("SELECT id,title,duration,created_by,attempts_allowed FROM exams")
+    exams = cur.fetchall()
+    conn.close()
+    return render_template('manage_exams_admin.html', exams=exams)
+
+
+
+
+@app.route('/admin/manage_exams/edit/<int:exam_id>', methods=['GET', 'POST'])
+def edit_exam(exam_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Fetch exam info
+    cur.execute("SELECT id, title, duration, attempts_allowed FROM exams WHERE id = %s", (exam_id,))
+    exam = cur.fetchone()
+    if not exam:
+        conn.close()
+        flash("Exam not found", "danger")
+        return redirect(url_for("manage_exams_admin"))
+
+    # Fetch questions
+    cur.execute("""
+        SELECT id, question, option1, option2, option3, option4, answer
+        FROM questions
+        WHERE exam_id = %s
+    """, (exam_id,))
+    questions = cur.fetchall()
+    print("DEBUG: Questions fetched:", questions)  # Debugging
+
+    if request.method == "POST":
+        # Update exam info
+        cur.execute("""
+            UPDATE exams
+            SET title=%s, duration=%s, attempts_allowed=%s
+            WHERE id=%s
+        """, (request.form['title'], request.form['duration'], request.form['attempts_allowed'], exam_id))
+
+        # Update questions
+        for q in questions:
+            q_id = q['id']
+            cur.execute("""
+                UPDATE questions
+                SET question=%s, option1=%s, option2=%s, option3=%s, option4=%s, answer=%s
+                WHERE id=%s
+            """, (
+                request.form.get(f"question_{q_id}"),
+                request.form.get(f"option1_{q_id}"),
+                request.form.get(f"option2_{q_id}"),
+                request.form.get(f"option3_{q_id}"),
+                request.form.get(f"option4_{q_id}"),
+                request.form.get(f"answer_{q_id}"),
+                q_id
+            ))
+
+        conn.commit()
+        conn.close()
+        flash("Exam and questions updated successfully!", "success")
+        return redirect(url_for("manage_exams_admin"))
+
+    conn.close()
+    return render_template("edit_exam.html", exam=exam, questions=questions)
+
+# ---------- DELETE ----------
+@app.route('/admin/manage_exams/delete/<int:exam_id>')
+def delete_exam(exam_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM exams WHERE id = %s", (exam_id,))
+    conn.commit()
+    conn.close()
+    flash("Exam deleted successfully!", "success")
+    return redirect(url_for("manage_exams_admin"))
+
+
+
+
+# --------------------
+# Mediator Routes
+# --------------------
 @app.route('/mediator/home')
 def mediator_home():
-    if session.get('role')!='mediator': return redirect(url_for('login'))
-    return render_template('mediator_home.html', name=session['name'])
+    if session.get('role')!='mediator': 
+        return redirect(url_for('login'))
+    return render_template('mediator_home.html', name=session['name']) 
+
+@app.route('/mediator/manage_exams')
+def manage_exams_mediator():
+    if 'role' not in session or session['role'] != 'mediator':
+        return redirect(url_for('login'))
+
+    mediator_id = session.get('user_id')  # Make sure this is set in session
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Fetch exams created by this mediator
+    cur.execute("""
+        SELECT id, title, duration, created_by, attempts_allowed
+        FROM exams
+        WHERE created_by = %s
+    """, (mediator_id,))
+    exams = cur.fetchall()
+    conn.close()
+
+    return render_template('manage_exams_mediator.html', exams=exams)
+
+
 
 @app.route('/mediator/create_student', methods=['GET','POST'])
 def create_student_mediator():
-    if 'role' not in session or session['role'] != 'mediator':
+    if session.get('role') != 'mediator':
         return redirect(url_for('login'))
 
     if request.method == 'POST':
@@ -200,9 +458,10 @@ def create_student_mediator():
         return redirect(url_for('mediator_home'))
 
     return render_template('create_student.html')
+
 @app.route('/mediator/account_details')
 def account_details_mediator():
-    if 'role' not in session or session['role'] != 'mediator':
+    if session.get('role') != 'mediator':
         return redirect(url_for('login'))
 
     conn = get_db_connection()
@@ -212,131 +471,12 @@ def account_details_mediator():
     cur.close()
     conn.close()
     return render_template('account_details_mediator.html', students=students)
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import os, json, time
-from datetime import timedelta, datetime
-from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
-import psycopg2
-import psycopg2.extras
 
-load_dotenv()
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if not DATABASE_URL:
-    raise RuntimeError('DATABASE_URL environment variable not set.')
-
-app = Flask(__name__)
-app.secret_key = os.environ.get('FLASK_SECRET', 'secret123')
-app.permanent_session_lifetime = timedelta(days=3650)
-UPLOAD_FOLDER = 'static/uploads'
-TAB_SWITCH_LIMIT = 3
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-def get_db_connection():
-    return psycopg2.connect(DATABASE_URL, sslmode='require')
-
-# ====================
-# User Helper
-# ====================
-def get_user(email):
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('SELECT * FROM users WHERE email=%s', (email,))
-    user = c.fetchone()
-    conn.close()
-    return user
-
-# ====================
-# Routes
-# ====================
-@app.route('/')
-def index():
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET','POST'])
-def login():
-    if request.method == 'POST':
-        email = request.form['email']
-        password = request.form['password']
-        user = get_user(email)
-        if user and user[4] == password:
-            session.permanent = True
-            session['user_id'] = user[0]
-            session['role'] = user[5]
-            session['name'] = user[1]
-            session['tab_switch'] = 0
-            if user[5]=='admin':
-                return redirect(url_for('admin_home'))
-            elif user[5]=='mediator':
-                return redirect(url_for('mediator_home'))
-            else:
-                return redirect(url_for('student_home'))
-        else:
-            flash('Invalid credentials')
-    return render_template('login.html')
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
-
-# ====================
-# Mediator Dashboard
-# ====================
-@app.route('/mediator/home')
-def mediator_home():
-    if session.get('role') != 'mediator':
-        return redirect(url_for('login'))
-    return render_template('mediator_home.html', name=session.get('name'))
-
-# --- Create Student ---
-@app.route('/mediator/create_student', methods=['GET','POST'])
-def create_student_mediator():
-    if session.get('role') != 'mediator':
-        return redirect(url_for('login'))
-    if request.method=='POST':
-        name = request.form['name']
-        email = request.form['email']
-        mobile = request.form['mobile']
-        password = request.form['password']
-        conn = get_db_connection()
-        cur = conn.cursor()
-        try:
-            cur.execute(
-                "INSERT INTO users (name,email,mobile,password,role) VALUES (%s,%s,%s,%s,'student')",
-                (name,email,mobile,password)
-            )
-            conn.commit()
-            flash("Student created successfully!")
-        except Exception as e:
-            conn.rollback()
-            flash(f"Error: {e}")
-        finally:
-            cur.close()
-            conn.close()
-        return redirect(url_for('mediator_home'))
-    return render_template('create_student.html')
-
-# --- View Students ---
-@app.route('/mediator/account_details')
-def account_details_mediator():
-    if session.get('role') != 'mediator':
-        return redirect(url_for('login'))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT id,name,email,mobile,password FROM users WHERE role='student'")
-    students = cur.fetchall()
-    cur.close()
-    conn.close()
-    return render_template('account_details_mediator.html', students=students)
-
-# --- Create Exam ---
 @app.route('/mediator/create_exam', methods=['GET','POST'])
 def create_exam_mediator():
     if session.get('role') != 'mediator':
         return redirect(url_for('login'))
+        
     if request.method=='POST':
         title = request.form['title']
         duration = int(request.form['duration'])
@@ -378,29 +518,17 @@ def create_exam_mediator():
         return redirect(url_for('mediator_home'))
     return render_template('create_exam.html')
 
-# --- Manage Exams ---
-@app.route('/manage_exams')
-def manage_exams():
-    if session.get('role') not in ['admin','mediator']:
-        return redirect(url_for('login'))
-    conn = get_db_connection()
-    cur = conn.cursor()
-    if session.get('role')=='admin':
-        cur.execute("SELECT id,title,duration,created_by,attempts_allowed FROM exams")
-    else:
-        cur.execute("SELECT id,title,duration,created_by,attempts_allowed FROM exams WHERE created_by=%s", (session.get('user_id'),))
-    exams = cur.fetchall()
-    conn.close()
-    return render_template('manage_exams.html', exams=exams)
 
 
 
 # --------------------
-# Student Home
+# Student Routes
 # --------------------
 @app.route('/student/home')
 def student_home():
-    if session.get('role')!='student': return redirect(url_for('login'))
+    if session.get('role')!='student': 
+        return redirect(url_for('login'))
+        
     exams = get_exams()
     uid = session.get('user_id')
     conn = get_db_connection()
@@ -425,22 +553,27 @@ def student_home():
     conn.close()
     return render_template('student_home.html', exam_infos=exam_infos, name=session.get('name'))
 
-# --------------------
-# Take Exam
-# --------------------
 @app.route('/student/take_exam/<int:exam_id>', methods=['GET','POST'])
 def take_exam(exam_id):
-    if session.get('role') != 'student': return redirect(url_for('login'))
+    if session.get('role') != 'student': 
+        return redirect(url_for('login'))
+        
     exam, questions = get_exam(exam_id)
+    if not exam:
+        flash('Exam not found')
+        return redirect(url_for('student_home'))
+        
     uid = session.get('user_id')
 
     # Check attempts
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute('SELECT attempts_allowed FROM exams WHERE id=%s', (exam_id,))
-    attempts_allowed = cur.fetchone()[0] if cur.rowcount else 1
+    result = cur.fetchone()
+    attempts_allowed = result[0] if result else 1
     cur.execute('SELECT COUNT(*) FROM submissions WHERE exam_id=%s AND student_id=%s', (exam_id, uid))
     prev_attempts = cur.fetchone()[0]
+    
     if prev_attempts >= attempts_allowed:
         flash(f'You have already attempted this exam ({attempts_allowed} allowed).')
         cur.close()

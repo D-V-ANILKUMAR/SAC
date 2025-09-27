@@ -1,0 +1,120 @@
+{% extends "layout.html" %} {% block content %}
+<style>
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+
+  .question-block {
+    background: #f8f9fa;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 12px;
+    border: 1px solid #e9ecef;
+  }
+
+  button {
+    background: #3490dc;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background: #2779bd;
+    transform: translateY(-2px);
+  }
+</style>
+
+<div class="container">
+  <h2>Create Exam</h2>
+  <form method="POST" enctype="multipart/form-data" id="examFormCreate">
+    <div class="form-group">
+      <input type="text" name="title" placeholder="Exam Title" required />
+    </div>
+
+    <div class="form-group">
+      <input
+        type="number"
+        name="duration"
+        placeholder="Duration (minutes)"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Attempts allowed per student (default 1)</label>
+      <input type="number" name="attempts_allowed" min="1" value="1" />
+    </div>
+
+    <input type="hidden" name="qcount" id="qcount" value="1" />
+
+    <div id="questions">
+      <div class="question-block" id="q1">
+        <h4>Question 1</h4>
+        <input type="text" name="question1" placeholder="Question" required />
+        <input type="file" name="image1" accept="image/*" />
+        <input type="text" name="opt1_1" placeholder="Option 1" required />
+        <input type="text" name="opt2_1" placeholder="Option 2" required />
+        <input type="text" name="opt3_1" placeholder="Option 3" required />
+        <input type="text" name="opt4_1" placeholder="Option 4" required />
+        <input type="text" name="answer1" placeholder="Answer" required />
+      </div>
+    </div>
+    <button type="button" onclick="addQuestion()">Add Another Question</button>
+    <button type="submit">Create Exam</button>
+  </form>
+</div>
+
+<script>
+  let qCount = 1;
+  function addQuestion() {
+    qCount++;
+    document.getElementById("qcount").value = qCount;
+    const div = document.createElement("div");
+    div.className = "question-block";
+    div.id = "q" + qCount;
+    div.innerHTML = `
+        <h4>Question ${qCount}</h4>
+        <input type="text" name="question${qCount}" placeholder="Question" required>
+        <input type="file" name="image${qCount}" accept="image/*">
+        <input type="text" name="opt1_${qCount}" placeholder="Option 1" required>
+        <input type="text" name="opt2_${qCount}" placeholder="Option 2" required>
+        <input type="text" name="opt3_${qCount}" placeholder="Option 3" required>
+        <input type="text" name="opt4_${qCount}" placeholder="Option 4" required>
+        <input type="text" name="answer${qCount}" placeholder="Answer" required>
+    `;
+    document.getElementById("questions").appendChild(div);
+  }
+</script>
+{% endblock %}

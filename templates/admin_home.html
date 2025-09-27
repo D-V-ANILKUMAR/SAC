@@ -73,7 +73,6 @@
   .dashboard-card a:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    
   }
 </style>
 
@@ -116,7 +115,7 @@
     <div class="dashboard-card">
       <h3>Exams</h3>
       <a href="{{ url_for('create_exam') }}" class="exam-create">Create Exam</a>
-      <a href="{{ url_for('manage_exams') }}" class="exam-manage"
+      <a href="{{ url_for('manage_exams_admin') }}" class="exam-manage"
         >Manage Exams</a
       >
       <a href="{{ url_for('admin_submissions') }}" class="submissions"

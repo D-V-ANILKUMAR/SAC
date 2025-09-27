@@ -1,0 +1,100 @@
+{% extends "layout.html" %} {% block content %}
+<style>
+  .container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid #edf2f7;
+  }
+
+  th {
+    background: #3490dc;
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+  }
+
+  tr:nth-child(even) {
+    background: #f8fafc;
+  }
+
+  tr:hover {
+    background: #f1f5f9;
+  }
+
+  .role-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .role-admin {
+    background: #f6ad55;
+    color: #744210;
+  }
+
+  .role-mediator {
+    background: #9ae6b4;
+    color: #22543d;
+  }
+
+  .role-student {
+    background: #90cdf4;
+    color: #2c5282;
+  }
+</style>
+
+<div class="container">
+  <h2>Account Details</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Mobile</th>
+        <th>Role</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user[0] }}</td>
+        <td>{{ user[1] }}</td>
+        <td>{{ user[2] }}</td>
+        <td>{{ user[3] }}</td>
+        <td>
+          <span class="role-badge role-{{ user[5] }}">
+            {{ user[5]|title }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

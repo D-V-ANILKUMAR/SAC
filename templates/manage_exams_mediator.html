@@ -1,0 +1,119 @@
+{% extends "layout.html" %} {% block content %}
+<style>
+  .container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 30px;
+  }
+
+  .exam-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .exam-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+  }
+
+  .exam-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .exam-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 10px;
+  }
+
+  .exam-details {
+    color: #718096;
+    margin-bottom: 15px;
+  }
+
+  .exam-details p {
+    margin: 5px 0;
+  }
+
+  .action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    border-radius: 6px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-primary {
+    background: #3490dc;
+    color: white;
+  }
+
+  .btn-danger {
+    background: #e53e3e;
+    color: white;
+  }
+
+  .btn-preview {
+    background: #38a169;
+    color: white;
+  }
+</style>
+
+<div class="container">
+  <h2>Manage Exams</h2>
+
+  <div class="exam-grid">
+    {% for exam in exams %}
+    <div class="exam-card">
+      <div class="exam-title">{{ exam[1] }}</div>
+      <div class="exam-details">
+        <p>Duration: {{ exam[2] }} minutes</p>
+        <p>Attempts allowed: {{ exam[4] or 1 }}</p>
+      </div>
+      <div class="action-buttons">
+        <a
+          href="{{ url_for('take_exam', exam_id=exam[0]) }}"
+          class="btn btn-preview"
+          >Preview</a
+        >
+        <a
+          href="{{ url_for('manage_exams_mediator') }}/edit/{{ exam[0] }}"
+          class="btn btn-primary"
+          >Edit</a
+        >
+        <a
+          href="{{ url_for('manage_exams_mediator') }}/delete/{{ exam[0] }}"
+          class="btn btn-danger"
+          onclick="return confirm('Are you sure you want to delete this exam?')"
+          >Delete</a
+        >
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
