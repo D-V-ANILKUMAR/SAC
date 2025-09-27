@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin Leaderboard</title>
+
+    <!-- DataTables CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+    />
+
+    <!-- jQuery and DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Roboto", sans-serif;
+        background: linear-gradient(135deg, #00c6ff, #0072ff);
+        color: #333;
+        margin: 0;
+        padding: 20px 40px;
+        min-height: 100vh;
+        transition: background 0.5s ease-in-out;
+      }
+      body:hover {
+        background: linear-gradient(135deg, #0072ff, #00c6ff);
+      }
+
+      /* Header with Logout Button */
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 2.5em;
+        color: #fff;
+        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        margin: 0;
+        animation: fadeIn 1s ease-out;
+      }
+
+      .logout-card {
+        background: #c0392b;
+        border-radius: 10px;
+        padding: 8px 16px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, background 0.3s ease;
+      }
+
+      .logout-card a {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .logout-card:hover {
+        transform: scale(1.05);
+        background: #e74c3c;
+      }
+
+      .download-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .download-buttons a {
+        text-decoration: none;
+        padding: 10px 20px;
+        margin: 0 8px;
+        background: #6a11cb;
+        color: white;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: transform 0.3s ease, background 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .download-buttons a:hover {
+        background: #2575fc;
+        transform: scale(1.05) rotate(-1deg);
+      }
+
+      /* DataTable styling */
+      table.dataTable {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: rgba(255, 255, 255, 0.95);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        animation: slideUp 1s ease-out;
+      }
+
+      table.dataTable thead th {
+        background: linear-gradient(90deg, #00f2fe, #4facfe);
+        color: white;
+        padding: 15px;
+        font-size: 1em;
+      }
+
+      table.dataTable tbody td {
+        padding: 12px 15px;
+        font-size: 0.95em;
+        transition: background 0.3s, transform 0.2s;
+      }
+
+      table.dataTable tbody tr:nth-child(even) {
+        background-color: rgba(200, 200, 200, 0.1);
+      }
+
+      table.dataTable tbody tr:hover {
+        background-color: rgba(58, 134, 255, 0.2);
+        transform: scale(1.01);
+      }
+
+      /* Highlight top 3 */
+      table.dataTable tbody tr:nth-child(1) td {
+        background-color: rgba(0, 255, 255, 0.3);
+        font-weight: bold;
+      }
+      table.dataTable tbody tr:nth-child(2) td {
+        background-color: rgba(102, 204, 255, 0.3);
+      }
+      table.dataTable tbody tr:nth-child(3) td {
+        background-color: rgba(102, 153, 255, 0.3);
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        .header {
+          flex-direction: column;
+          gap: 15px;
+        }
+        table.dataTable thead th,
+        table.dataTable tbody td {
+          font-size: 0.8em;
+          padding: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header with Logout Button -->
+    <div class="header">
+      <h1>Leaderboard</h1>
+      <div class="logout-card">
+        <a href="{{ url_for('logout') }}">Logout</a>
+      </div>
+    </div>
+
+    <div class="download-buttons">
+      <a href="{{ url_for('download_leaderboard_pdf') }}" target="_blank"
+        >Download PDF</a
+      >
+      <a href="{{ url_for('download_leaderboard_excel') }}" target="_blank"
+        >Download Excel</a
+      >
+    </div>
+
+    <table id="leaderboard" class="display">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Student Name</th>
+          <th>Exam Title</th>
+          <th>Score</th>
+          <th>Attempt</th>
+          <th>Submitted At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in leaderboard %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ row.student_name }}</td>
+          <td>{{ row.exam_title }}</td>
+          <td>{{ row.score }}</td>
+          <td>{{ row.attempt_number }}</td>
+          <td>{{ row.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <script>
+      $(document).ready(function () {
+        $("#leaderboard").DataTable({
+          order: [[3, "desc"]],
+          pageLength: 10,
+          lengthMenu: [5, 10, 20, 50],
+          columnDefs: [
+            { orderable: false, targets: 0 }, // S.No not sortable
+          ],
+        });
+      });
+    </script>
+  </body>
+</html>

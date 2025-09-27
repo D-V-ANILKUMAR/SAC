@@ -25,6 +25,7 @@
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
+    text-align: center;
   }
 
   .exam-card:hover {
@@ -49,7 +50,7 @@
 
   .action-buttons {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-top: 15px;
   }
@@ -80,6 +81,18 @@
   .btn-preview {
     background: #38a169;
     color: white;
+  }
+
+  /* Leaderboard card special style */
+  .leaderboard-card {
+    background: #f59e0b;
+    color: white;
+    font-weight: bold;
+  }
+  .leaderboard-card a {
+    background: white;
+    color: #f59e0b;
+    font-weight: bold;
   }
 </style>
 
@@ -114,6 +127,17 @@
       </div>
     </div>
     {% endfor %}
+
+    <!-- Leaderboard Card -->
+    <div class="exam-card leaderboard-card">
+      <div class="exam-title">Leaderboard</div>
+      <p>View top students and download PDF report</p>
+      <div class="action-buttons">
+        <a href="{{ url_for('admin_leaderboard') }}" class="btn btn-preview"
+          >Go</a
+        >
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

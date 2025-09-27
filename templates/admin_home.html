@@ -63,10 +63,13 @@
     background: #2980b9;
   }
   .submissions {
-    background: #16a085;
+    background: #16a084;
   }
   .logout {
     background: #c0392b;
+  }
+  .leaderboard {
+    background: #ff00b7ff;
   }
 
   /* Hover effect for buttons */
@@ -121,7 +124,14 @@
       <a href="{{ url_for('admin_submissions') }}" class="submissions"
         >View Submissions</a
       >
+          <a href="{{ url_for('admin_leaderboard') }}"class="leaderboard">Leaderboard</a>
+
     </div>
+    
+
+   
+
+
 
     <!-- Logout Card -->
     <div class="dashboard-card">

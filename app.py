@@ -1,10 +1,15 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import os, json, time
+import os, json
 from datetime import timedelta, datetime
+from io import BytesIO
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import psycopg2
 import psycopg2.extras
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import pandas as pd
+
 
 # Load .env
 load_dotenv()
@@ -319,8 +324,101 @@ def manage_exams_admin():
     conn.close()
     return render_template('manage_exams_admin.html', exams=exams)
 
+@app.route('/admin/leaderboard')
+def admin_leaderboard():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur.execute('''
+        SELECT s.id, u.name as student_name, e.title as exam_title, s.score, s.attempt_number, s.submitted_at
+        FROM submissions s
+        JOIN users u ON s.student_id = u.id
+        JOIN exams e ON s.exam_id = e.id
+        ORDER BY s.score DESC, s.submitted_at ASC
+    ''')
+    leaderboard = cur.fetchall()
+    conn.close()
+    return render_template('admin_leaderboard.html', leaderboard=leaderboard)
+
+@app.route('/admin/leaderboard/download')
+def download_leaderboard_pdf():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at
+        FROM submissions s
+        JOIN users u ON s.student_id = u.id
+        JOIN exams e ON s.exam_id = e.id
+        ORDER BY s.score DESC, s.submitted_at ASC
+    ''')
+    data = cur.fetchall()
+    conn.close()
+
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, height-50, "Leaderboard Report")
+    c.setFont("Helvetica", 12)
+
+    y = height - 80
+    c.drawString(50, y, "S.No")
+    c.drawString(90, y, "Student Name")
+    c.drawString(250, y, "Exam Title")
+    c.drawString(370, y, "Score")
+    c.drawString(430, y, "Attempt")
+    c.drawString(490, y, "Submitted At")
+    y -= 20
+
+    for idx, row in enumerate(data, start=1):
+        c.drawString(50, y, str(idx))
+        c.drawString(90, y, str(row[0]))
+        c.drawString(250, y, str(row[1]))
+        c.drawString(370, y, str(row[2]))
+        c.drawString(430, y, str(row[3]))
+        c.drawString(490, y, str(row[4].strftime('%Y-%m-%d %H:%M')))
+        y -= 20
+        if y < 50:
+            c.showPage()
+            y = height - 50
+
+    c.save()
+    buffer.seek(0)
+    return send_file(buffer, as_attachment=True, download_name="leaderboard.pdf", mimetype='application/pdf')
 
 
+import pandas as pd
+from flask import send_file
+from io import BytesIO
+
+@app.route('/admin/leaderboard/excel')
+def download_leaderboard_excel():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at
+        FROM submissions s
+        JOIN users u ON s.student_id = u.id
+        JOIN exams e ON s.exam_id = e.id
+        ORDER BY s.score DESC, s.submitted_at ASC
+    ''')
+    data = cur.fetchall()
+    conn.close()
+
+    df = pd.DataFrame(data, columns=['Student Name','Exam Title','Score','Attempt','Submitted At'])
+    buffer = BytesIO()
+    df.to_excel(buffer, index=False)
+    buffer.seek(0)
+
+    return send_file(buffer, as_attachment=True, download_name="leaderboard.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 @app.route('/admin/manage_exams/edit/<int:exam_id>', methods=['GET', 'POST'])
 def edit_exam(exam_id):
