@@ -1,0 +1,19 @@
+{% extends "layout.html" %} {% block content %}
+<div class="container">
+  <h2>Edit Exam</h2>
+  <form method="POST">
+    <label>Title</label>
+    <input type="text" name="title" value="{{ exam[1] }}" required /><br />
+    <label>Duration (minutes)</label>
+    <input type="number" name="duration" value="{{ exam[2] }}" required /><br />
+    <label>Attempts allowed</label>
+    <input
+      type="number"
+      name="attempts_allowed"
+      value="{{ exam[4] or 1 }}"
+      min="1"
+    /><br />
+    <button type="submit">Save</button>
+  </form>
+</div>
+{% endblock %}

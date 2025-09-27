@@ -1,28 +1,133 @@
 {% extends "layout.html" %} {% block content %}
-<div class="container">
-  <h2>Admin Dashboard</h2>
-  <p>Welcome, {{ name }}!</p>
+<style>
+  /* Dashboard Grid */
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
 
-  <div class="dashboard">
-    <div class="card">
-      <div>Create Mediator</div>
-      <a href="{{ url_for('create_mediator') }}">Open</a>
+  /* Card Style */
+  .dashboard-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Card Title */
+  .dashboard-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 18px;
+    color: #2c3e50;
+    font-weight: 600;
+  }
+
+  /* Action Buttons */
+  .dashboard-card a {
+    display: block;
+    padding: 14px 20px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    color: #fff;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Colors for different actions */
+  .user-create {
+    background: #1d72b8;
+  }
+  .student-create {
+    background: #2ecc71;
+  }
+  .account {
+    background: #8e44ad;
+  }
+  .exam-create {
+    background: #e67e22;
+  }
+  .exam-manage {
+    background: #2980b9;
+  }
+  .submissions {
+    background: #16a085;
+  }
+  .logout {
+    background: #c0392b;
+  }
+
+  /* Hover effect for buttons */
+  .dashboard-card a:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    
+  }
+</style>
+
+<div class="container mx-auto p-8">
+  <h2
+    style="
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #34495e;
+    "
+  >
+    Admin Dashboard
+  </h2>
+  <p style="color: #555; margin-bottom: 30px">
+    Welcome, {{ name }}! Manage your system from here.
+  </p>
+
+  <div class="dashboard-grid">
+    <!-- Manage Users Card -->
+    <div class="dashboard-card">
+      <h3>Manage Users</h3>
+      <a href="{{ url_for('create_mediator') }}" class="user-create"
+        >Create Mediator</a
+      >
+      <a href="{{ url_for('create_student_admin') }}" class="student-create"
+        >Create Student</a
+      >
     </div>
-    <div class="card">
-      <div>Create Student</div>
-      <a href="{{ url_for('create_student_admin') }}">Open</a>
+
+    <!-- Account Details Card -->
+    <div class="dashboard-card">
+      <h3>Account Details</h3>
+      <a href="{{ url_for('account_details_admin') }}" class="account"
+        >View / Update</a
+      >
     </div>
-    <div class="card">
-      <div>Account Details</div>
-      <a href="{{ url_for('account_details_admin') }}">Open</a>
+
+    <!-- Exams Card -->
+    <div class="dashboard-card">
+      <h3>Exams</h3>
+      <a href="{{ url_for('create_exam') }}" class="exam-create">Create Exam</a>
+      <a href="{{ url_for('manage_exams') }}" class="exam-manage"
+        >Manage Exams</a
+      >
+      <a href="{{ url_for('admin_submissions') }}" class="submissions"
+        >View Submissions</a
+      >
     </div>
-    <div class="card">
-      <div>Create Exam</div>
-      <a href="{{ url_for('create_exam') }}">Open</a>
-    </div>
-    <div class="card">
-      <div>Logout</div>
-      <a href="{{ url_for('logout') }}">Logout</a>
+
+    <!-- Logout Card -->
+    <div class="dashboard-card">
+      <h3>Logout</h3>
+      <a href="{{ url_for('logout') }}" class="logout">Logout</a>
     </div>
   </div>
 </div>

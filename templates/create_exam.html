@@ -1,37 +1,69 @@
-{% extends "layout.html" %}
-{% block content %}
+{% extends "layout.html" %} {% block content %}
 <div class="container">
-<h2>Create Exam</h2>
-<form method="POST" enctype="multipart/form-data" id="examFormCreate">
-    <input type="text" name="title" placeholder="Exam Title" required><br>
-    <input type="number" name="duration" placeholder="Duration (minutes)" required><br>
-    <input type="hidden" name="qcount" id="qcount" value="1">
+  <h2>Create Exam</h2>
+  <form method="POST" enctype="multipart/form-data" id="examFormCreate">
+    <input type="text" name="title" placeholder="Exam Title" required /><br />
+    <input
+      type="number"
+      name="duration"
+      placeholder="Duration (minutes)"
+      required
+    /><br />
+    <label>Attempts allowed per student (default 1)</label>
+    <input type="number" name="attempts_allowed" min="1" value="1" /><br />
+    <input type="hidden" name="qcount" id="qcount" value="1" />
 
     <div id="questions">
-        <div class="question-block" id="q1">
-            <h4>Question 1</h4>
-            <input type="text" name="question1" placeholder="Question" required><br>
-            <input type="file" name="image1" accept="image/*"><br>
-            <input type="text" name="opt1_1" placeholder="Option 1" required><br>
-            <input type="text" name="opt2_1" placeholder="Option 2" required><br>
-            <input type="text" name="opt3_1" placeholder="Option 3" required><br>
-            <input type="text" name="opt4_1" placeholder="Option 4" required><br>
-            <input type="text" name="answer1" placeholder="Answer" required><br>
-        </div>
+      <div class="question-block" id="q1">
+        <h4>Question 1</h4>
+        <input
+          type="text"
+          name="question1"
+          placeholder="Question"
+          required
+        /><br />
+        <input type="file" name="image1" accept="image/*" /><br />
+        <input
+          type="text"
+          name="opt1_1"
+          placeholder="Option 1"
+          required
+        /><br />
+        <input
+          type="text"
+          name="opt2_1"
+          placeholder="Option 2"
+          required
+        /><br />
+        <input
+          type="text"
+          name="opt3_1"
+          placeholder="Option 3"
+          required
+        /><br />
+        <input
+          type="text"
+          name="opt4_1"
+          placeholder="Option 4"
+          required
+        /><br />
+        <input type="text" name="answer1" placeholder="Answer" required /><br />
+      </div>
     </div>
-    <button type="button" onclick="addQuestion()">Add Another Question</button><br><br>
+    <button type="button" onclick="addQuestion()">Add Another Question</button
+    ><br /><br />
     <button type="submit">Create Exam</button>
-</form>
+  </form>
 </div>
 
 <script>
-let qCount = 1;
-function addQuestion() {
+  let qCount = 1;
+  function addQuestion() {
     qCount++;
-    document.getElementById('qcount').value = qCount;
-    const div = document.createElement('div');
-    div.className = 'question-block';
-    div.id = 'q'+qCount;
+    document.getElementById("qcount").value = qCount;
+    const div = document.createElement("div");
+    div.className = "question-block";
+    div.id = "q" + qCount;
     div.innerHTML = `
         <h4>Question ${qCount}</h4>
         <input type="text" name="question${qCount}" placeholder="Question" required><br>
@@ -42,7 +74,7 @@ function addQuestion() {
         <input type="text" name="opt4_${qCount}" placeholder="Option 4" required><br>
         <input type="text" name="answer${qCount}" placeholder="Answer" required><br>
     `;
-    document.getElementById('questions').appendChild(div);
-}
+    document.getElementById("questions").appendChild(div);
+  }
 </script>
 {% endblock %}

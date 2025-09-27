@@ -1,5 +1,79 @@
 {% extends "layout.html" %}
 {% block content %}
+<style>
+  body {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    font-family: "Arial", sans-serif;
+    min-height: 100vh;
+  }
+
+  .form-container {
+    max-width: 500px;
+    margin: 50px auto;
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 40px 30px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .form-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  }
+
+  .form-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+
+  form input {
+    width: 100%;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+
+  form input:focus {
+    border-color: #2575fc;
+    box-shadow: 0 0 8px rgba(37, 117, 252, 0.3);
+    outline: none;
+  }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  button:hover {
+    background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Optional: responsive for mobile */
+  @media (max-width: 600px) {
+    .form-container {
+      margin: 30px 20px;
+      padding: 30px 20px;
+    }
+  }
+</style>
+
 <h2>Create Student</h2>
 <form method="POST">
     <input type="text" name="name" placeholder="Name" required><br>
@@ -8,4 +82,5 @@
     <input type="password" name="password" placeholder="Password" required><br>
     <button type="submit">Create Student</button>
 </form>
+
 {% endblock %}

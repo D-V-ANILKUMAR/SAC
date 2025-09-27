@@ -1,10 +1,12 @@
-function startTimer(durationMinutes, formId) {
+function startTimer(durationMinutes, formId, examId) {
   let form = document.getElementById(formId);
+  // Build a unique key per exam so each take starts fresh
+  const key = `exam_start_${examId}`;
   // Store the start time in sessionStorage to survive reloads
-  let startTime = sessionStorage.getItem("exam_start");
+  let startTime = sessionStorage.getItem(key);
   if (!startTime) {
     startTime = Date.now();
-    sessionStorage.setItem("exam_start", startTime);
+    sessionStorage.setItem(key, startTime);
   } else {
     startTime = parseInt(startTime);
   }
@@ -18,7 +20,7 @@ function startTimer(durationMinutes, formId) {
 
     if (remaining <= 0) {
       clearInterval(timerInterval);
-      sessionStorage.removeItem("exam_start");
+      sessionStorage.removeItem(key);
       alert("Time is up! Submitting exam.");
       form.submit();
     }
@@ -27,4 +29,9 @@ function startTimer(durationMinutes, formId) {
     let secs = remaining % 60;
     document.title = mins + ":" + (secs < 10 ? "0" : "") + secs;
   }, 1000);
+}
+
+function resetTimer(examId) {
+  const key = `exam_start_${examId}`;
+  sessionStorage.removeItem(key);
 }

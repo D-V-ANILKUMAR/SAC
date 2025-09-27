@@ -1,51 +1,173 @@
-{% extends "layout.html" %} {% block content %}
+{% extends "layout.html" %}
+{% block content %}
+<style>
+  body {
+    background: #f0f4f8;
+    font-family: "Arial", sans-serif;
+    user-select: none; /* Disable text selection */
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  #timer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #3490dc;
+    color: white;
+    font-weight: bold;
+    padding: 10px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transition: background 0.3s ease;
+  }
+
+  .question-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  }
+
+  .options input {
+    margin-right: 10px;
+  }
+
+  button.submit-btn {
+    background: #3490dc;
+    color: #fff;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  button.submit-btn:hover {
+    background: #2575fc;
+  }
+
+  #progress-container {
+    background: #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    height: 20px;
+    overflow: hidden;
+  }
+
+  #progress-bar {
+    background: #3490dc;
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+</style>
+
+<div id="timer">Time Left: --:--</div>
+
 <div class="container">
-  <h2>{{ exam[1] }}</h2>
-  <p>Duration: {{ exam[2] }} minutes</p>
+  <h2>{{ exam.title }}</h2>
+  <p>Duration: {{ exam.duration }} minutes</p>
+
+  <div id="progress-container">
+    <div id="progress-bar"></div>
+  </div>
 
   <form method="POST" id="examForm">
     {% for q in questions %}
-    <div class="question">
-      <p><strong>{{ loop.index }}. {{ q[2] }}</strong></p>
-      {% if q[3] %}
-      <img
-        src="{{ url_for('static', filename='uploads/' ~ q[3]) }}"
-        style="max-width: 300px; margin-bottom: 10px"
-      /><br />
-      {% endif %}
-      <label
-        ><input type="radio" name="q{{ q[0] }}" value="{{ q[4] }}" required />
-        {{ q[4] }}</label
-      ><br />
-      <label
-        ><input type="radio" name="q{{ q[0] }}" value="{{ q[5] }}" required />
-        {{ q[5] }}</label
-      ><br />
-      <label
-        ><input type="radio" name="q{{ q[0] }}" value="{{ q[6] }}" required />
-        {{ q[6] }}</label
-      ><br />
-      <label
-        ><input type="radio" name="q{{ q[0] }}" value="{{ q[7] }}" required />
-        {{ q[7] }}</label
-      >
-    </div>
-    <hr />
+      <div class="question-card">
+        <h4>Q{{ loop.index }}: {{ q.question }}</h4>
+        {% if q.image %}
+          <img src="{{ url_for('static', filename='uploads/' + q.image) }}" style="max-width:100%; margin:10px 0"/>
+        {% endif %}
+        <div class="options">
+          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option1|e }}" required> {{ q.option1 }}</label><br>
+          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option2|e }}"> {{ q.option2 }}</label><br>
+          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option3|e }}"> {{ q.option3 }}</label><br>
+          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option4|e }}"> {{ q.option4 }}</label>
+        </div>
+      </div>
     {% endfor %}
-
-    <button type="submit">Submit Exam</button>
+    <button type="submit" class="submit-btn">Submit Exam</button>
   </form>
 </div>
 
-<!-- JS Scripts -->
-<script src="{{ url_for('static', filename='js/exam_timer.js') }}"></script>
-<script src="{{ url_for('static', filename='js/tab_control.js') }}"></script>
 <script>
-  // Start exam timer automatically
-  startTimer({{ exam[2] }}, 'examForm');
+  const form = document.getElementById("examForm");
+  const timerDisplay = document.getElementById("timer");
+  const progressBar = document.getElementById("progress-bar");
+  const questionIDs = [{% for q in questions %}{{ q.id }}{% if not loop.last %}, {% endif %}{% endfor %}];
 
-  // Enforce tab switch limit
-  setTabSwitchLimit({{ tab_limit }}, 'examForm');
+  // Disable copy/cut/drag/drop
+  document.addEventListener('copy', e => e.preventDefault());
+  document.addEventListener('cut', e => e.preventDefault());
+  document.addEventListener('contextmenu', e => e.preventDefault());
+
+  function updateProgress() {
+    let answered = 0;
+    questionIDs.forEach(qid => {
+      const radios = form.querySelectorAll('input[name="q' + qid + '"]');
+      for (const r of radios) {
+        if (r.checked) { answered++; break; }
+      }
+    });
+    progressBar.style.width = ((answered / questionIDs.length) * 100) + '%';
+  }
+
+  form.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', updateProgress));
+
+  function startTimer(durationMinutes) {
+    let timer = durationMinutes * 60;
+    const countdown = setInterval(() => {
+      const minutes = Math.floor(timer / 60);
+      const seconds = timer % 60;
+      timerDisplay.textContent = `Time Left: ${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+      if (timer <= 60) timerDisplay.style.background = '#e3342f';
+      if (--timer < 0) {
+        clearInterval(countdown);
+        alert("⏰ Time is up! Exam will be submitted automatically.");
+        form.submit();
+      }
+    }, 1000);
+  }
+
+  form.addEventListener("submit", function() {
+    const btn = this.querySelector("button[type=submit]");
+    btn.disabled = true;
+    btn.innerText = "Submitting...";
+  });
+
+  startTimer({{ exam.duration|tojson }});
+
+  // Tab switch detection
+  const TAB_LIMIT = {{ tab_limit|tojson }};
+  let tabSwitchCount = 0;
+
+  window.addEventListener('blur', () => {
+    tabSwitchCount++;
+    alert(`⚠️ You switched tabs! (${tabSwitchCount} of ${TAB_LIMIT})`);
+    if (tabSwitchCount >= TAB_LIMIT) {
+      alert('Maximum tab switches reached. Exam disqualified and submitted automatically.');
+      let disqualInput = document.createElement('input');
+      disqualInput.type = 'hidden';
+      disqualInput.name = 'disqualified';
+      disqualInput.value = '1';
+      form.appendChild(disqualInput);
+      form.submit();
+    }
+  });
 </script>
-
 {% endblock %}

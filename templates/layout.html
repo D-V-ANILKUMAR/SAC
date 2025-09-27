@@ -6,16 +6,24 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+
   </head>
   <body>
-    <div class="container">
-      {% with messages = get_flashed_messages() %} {% if messages %}
+  
+
+    <!-- Main content -->
+    <div class="main-content container">
+      {% with messages = get_flashed_messages() %}
+      {% if messages %}
       <ul class="flash">
         {% for m in messages %}
         <li>{{ m }}</li>
         {% endfor %}
       </ul>
-      {% endif %} {% endwith %} {% block content %}{% endblock %}
+      {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
     </div>
   </body>
 </html>

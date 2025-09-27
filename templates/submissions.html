@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container">
+  <h2>Submissions</h2>
+
+  <!-- Main filter + sort form -->
+  <form id="filterForm" method="get" action="{{ url_for('admin_submissions') }}">
+    <label for="exam_id">Filter by exam:</label>
+    <select name="exam_id" id="exam_id" onchange="document.getElementById('filterForm').submit()">
+      <option value="">All exams</option>
+      {% for ex in exams %}
+      <option value="{{ ex[0] }}"
+        {% if selected_exam and (selected_exam|string) == (ex[0]|string) %}selected{% endif %}>
+        {{ ex[1] }}
+      </option>
+      {% endfor %}
+    </select>
+
+    <label for="sort">Sort:</label>
+    <select name="sort" id="sort" onchange="document.getElementById('filterForm').submit()">
+      <option value="time_desc" {% if sort=='time_desc' %}selected{% endif %}>Newest</option>
+      <option value="score_desc" {% if sort=='score_desc' %}selected{% endif %}>Score (High → Low)</option>
+      <option value="score_asc" {% if sort=='score_asc' %}selected{% endif %}>Score (Low → High)</option>
+      <option value="name_asc" {% if sort=='name_asc' %}selected{% endif %}>Name (A → Z)</option>
+      <option value="name_desc" {% if sort=='name_desc' %}selected{% endif %}>Name (Z → A)</option>
+    </select>
+
+    <noscript><button type="submit">Filter</button></noscript>
+  </form>
+
+  {% if selected_exam %}
+  <h3>Leaderboard</h3>
+
+  <!-- Leaderboard sort form -->
+  <form id="leaderboardForm" method="get" action="{{ url_for('admin_submissions') }}">
+    <input type="hidden" name="exam_id" value="{{ selected_exam }}">
+    <label for="lb_sort">Order:</label>
+    <select name="lb_sort" id="lb_sort" onchange="document.getElementById('leaderboardForm').submit()">
+      <option value="score_desc" {% if request.args.get('lb_sort','score_desc')=='score_desc' %}selected{% endif %}>Score (High → Low)</option>
+      <option value="score_asc" {% if request.args.get('lb_sort')=='score_asc' %}selected{% endif %}>Score (Low → High)</option>
+      <option value="name_asc" {% if request.args.get('lb_sort')=='name_asc' %}selected{% endif %}>Name (A → Z)</option>
+      <option value="name_desc" {% if request.args.get('lb_sort')=='name_desc' %}selected{% endif %}>Name (Z → A)</option>
+    </select>
+  </form>
+  {% endif %}
+
+  <!-- Submissions table -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Exam</th>
+        <th>Student</th>
+        <th>Score</th>
+        <th>Submitted At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in submissions %}
+      <tr>
+        <td>{{ s[0] }}</td>
+        <td>{{ s[2] or ('Exam ID ' ~ s[1]) }}</td>
+        <td>{{ s[4] or ('User ID ' ~ s[3]) }}</td>
+        <td>{{ s[5] }}</td>
+        <td>{{ s[6] }}</td>
+        <td><a href="{{ url_for('admin_submission_detail', submission_id=s[0]) }}">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

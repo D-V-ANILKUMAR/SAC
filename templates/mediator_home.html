@@ -1,11 +1,107 @@
 {% extends "layout.html" %}
 {% block content %}
-<h2>Mediator Home</h2>
-<p>Welcome {{name}}</p>
-<ul>
-    <li><a href="{{ url_for('create_student_mediator') }}">Create Student</a></li>
-    <li><a href="{{ url_for('account_details_mediator') }}">View Students</a></li>
-    <li><a href="{{ url_for('create_exam_mediator') }}">Create Exam</a></li>
-    <li><a href="{{ url_for('logout') }}">Logout</a></li>
-</ul>
+<style>
+  body {
+    background: #f0f4f8;
+    font-family: 'Arial', sans-serif;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: #555;
+    margin-bottom: 30px;
+    font-size: 1.1rem;
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  .card a {
+    display: block;
+    padding: 14px 0;
+    margin-top: 10px;
+    background: #3490dc;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card a:hover {
+    background: #2575fc;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  }
+
+  /* Logout button */
+  .card.logout a {
+    background: #e3342f;
+  }
+
+  .card.logout a:hover {
+    background: #c12a24;
+  }
+</style>
+
+<div class="container">
+  <h2>Mediator Home</h2>
+  <p>Welcome {{name}}!</p>
+
+  <div class="dashboard-grid">
+    <div class="card">
+      <h3>Create Student</h3>
+      <a href="{{ url_for('create_student_mediator') }}">Go</a>
+    </div>
+
+    <div class="card">
+      <h3>View Students</h3>
+      <a href="{{ url_for('account_details_mediator') }}">Go</a>
+    </div>
+
+    <div class="card">
+      <h3>Create Exam</h3>
+      <a href="{{ url_for('create_exam_mediator') }}">Go</a>
+    </div>
+
+    <div class="card">
+      <h3>Manage Exams</h3>
+      <a href="{{ url_for('manage_exams') }}">Go</a>
+    </div>
+
+    <div class="card logout">
+      <h3>Logout</h3>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+</div>
 {% endblock %}

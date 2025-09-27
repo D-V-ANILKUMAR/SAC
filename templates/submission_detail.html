@@ -1,0 +1,19 @@
+{% extends "layout.html" %} {% block content %}
+<div class="container">
+  <h2>Submission #{{ submission[0] }}</h2>
+  <p>Exam ID: {{ submission[1] }}</p>
+  <p>Student ID: {{ submission[2] }}</p>
+  <p>Score: {{ submission[4] }}</p>
+  <p>Submitted At: {{ submission[5] }}</p>
+
+  <h3>Answers</h3>
+  <ul>
+    {% for qid, ans in answers.items() %}
+    <li>
+      <strong>{{ qmap[qid|int] if qmap.get(qid|int) else ('Q '+qid) }}:</strong>
+      {{ ans }}
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

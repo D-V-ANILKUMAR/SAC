@@ -1,0 +1,102 @@
+{% extends "layout.html" %}
+{% block content %}
+<style>
+  body {
+    background: #f0f4f8;
+    font-family: 'Arial', sans-serif;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 30px;
+  }
+
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  }
+
+  .card div:first-child {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #34495e;
+  }
+
+  .card div:nth-child(2),
+  .card div:nth-child(3) {
+    color: #555;
+    font-size: 0.95rem;
+  }
+
+  .card div a {
+    display: inline-block;
+    margin-right: 10px;
+    margin-top: 10px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 500;
+    color: #fff;
+    background: #3490dc;
+    transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card div a:hover {
+    background: #2575fc;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  }
+
+  /* Optional: Preview button different color */
+  .card div a:nth-child(2) {
+    background: #2ecc71;
+  }
+
+  .card div a:nth-child(2):hover {
+    background: #27ae60;
+  }
+</style>
+
+<div class="container">
+  <h2>Manage Exams</h2>
+  <div class="dashboard">
+    {% for ex in exams %}
+    <div class="card">
+      <div>{{ ex[1] }}</div>
+      <div>Duration: {{ ex[2] }} min</div>
+      <div>Attempts: {{ ex[4] or 1 }}</div>
+      <div style="margin-top: 8px">
+        <a href="{{ url_for('edit_exam', exam_id=ex[0]) }}">Edit</a>
+        <a href="{{ url_for('take_exam', exam_id=ex[0]) }}">Preview</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+<h2>All Submissions</h2>
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Student</th>
+        <th>Exam</th>
+        <th>Score</th>
+        <th>Submitted At</th>
+    </tr>
+    {% for s in submissions %}
+    <tr>
+        <td>{{ s[0] }}</td>
+        <td>{{ s[1] }}</td>
+        <td>{{ s[2] }}</td>
+        <td>{{ s[3] }}</td>
+        <td>{{ s[4] }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{{ url_for('admin_home') }}">Back to Home</a>
+{% endblock %}

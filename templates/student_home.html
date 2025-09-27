@@ -1,22 +1,67 @@
 {% extends "layout.html" %} {% block content %}
 <div class="container">
   <h2>Student Home</h2>
-  <p>Welcome {{name}}</p>
+  <p>Welcome {{ name }}</p>
 
   <h3>Available Exams</h3>
   <div class="dashboard">
-    {% for exam in exams %}
+    {% for ex in exam_infos %}
     <div class="card">
-      <div style="font-size: 18px">{{ exam[1] }}</div>
+      <div style="font-size: 18px">{{ ex.title }}</div>
       <div style="margin-top: 8px">
-        <a href="{{ url_for('take_exam', exam_id=exam[0]) }}">Take Exam</a>
+        <div>Attempts allowed: {{ ex.attempts_allowed }}</div>
+        <div>Attempts taken: {{ ex.prev_attempts }}</div>
+        <div>Remaining: {{ ex.remaining }}</div>
+        {% if ex.remaining > 0 %}
+        <a href="{{ url_for('take_exam', exam_id=ex.id) }}">Take Exam</a>
+        {% else %}
+        <span
+          style="
+            color: #fff;
+            background: #2f4ad345;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 8px;
+          "
+          >No attempts left</span
+        >
+        {% endif %}
       </div>
     </div>
     {% endfor %}
   </div>
 
-  <div style="margin-top: 20px">
-    <a href="{{ url_for('logout') }}">Logout</a>
-  </div>
+<style>
+  /* Logout container */
+  .logout-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  /* Logout link styled as button */
+  .logout-container a {
+    display: inline-block;
+    padding: 12px 24px;
+    background: #ce2fe3ff; /* Red background */
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+  }
+
+  /* Hover effect */
+  .logout-container a:hover {
+    background: #c12a24;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+  }
+</style>
+
+<div class="logout-container">
+  <a href="{{ url_for('logout') }}">Logout</a>
 </div>
+
 {% endblock %}

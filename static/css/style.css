@@ -14,12 +14,34 @@ body {
   line-height: 1.6;
 }
 
+/* Sidebar layout (screenshot style) */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+  width: 220px;
+  background: linear-gradient(180deg, #0d47a1 0%, #0b3a91 100%);
+  color: #fff;
+  padding: 20px;
+}
+.sidebar a {
+  color: #fff;
+  display: block;
+  padding: 8px 0;
+}
+.main-area {
+  flex: 1;
+  padding: 30px;
+  background: linear-gradient(180deg, #eaf6ff, #f4f6f9);
+}
+
 /* ==========================
    Container
 ========================== */
 .container {
   max-width: 900px;
-  margin: 50px auto;
+  margin: 30px auto;
   background: #fff;
   padding: 30px 40px;
   border-radius: 12px;
@@ -76,6 +98,26 @@ form button {
 
 form button:hover {
   background-color: #45a049;
+}
+
+/* Dark login card (from screenshot) */
+.login-card {
+  max-width: 420px;
+  margin: 60px auto;
+  background: linear-gradient(180deg, #071021, #0b1a2b);
+  padding: 30px;
+  border-radius: 12px;
+  color: #fff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+.login-card input {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+.login-card button {
+  background: linear-gradient(90deg, #a8ff78, #78ffd6);
+  color: #052;
 }
 
 /* ==========================
