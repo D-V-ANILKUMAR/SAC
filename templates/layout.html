@@ -1,29 +1,34 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Student Association</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
-
   </head>
   <body>
-  
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
 
     <!-- Main content -->
     <div class="main-content container">
-      {% with messages = get_flashed_messages() %}
-      {% if messages %}
+      {% with messages = get_flashed_messages() %} {% if messages %}
       <ul class="flash">
         {% for m in messages %}
         <li>{{ m }}</li>
         {% endfor %}
       </ul>
-      {% endif %}
-      {% endwith %}
-
-      {% block content %}{% endblock %}
+      {% endif %} {% endwith %} {% block content %}{% endblock %}
     </div>
+
+    <!-- Mobile Navigation Script -->
+    <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
   </body>
 </html>
