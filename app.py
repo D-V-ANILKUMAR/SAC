@@ -9,6 +9,23 @@ import psycopg2.extras
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import pandas as pd
+from flask import send_file
+from io import BytesIO
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
+from flask import request  # make sure this is imported
+
+from flask import send_file, request, redirect, url_for, session
+
+
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
 
 # Load .env
@@ -171,6 +188,8 @@ def admin_home():
     if session.get('role')!='admin': 
         return redirect(url_for('login'))
     return render_template('admin_home.html', name=session['name'])
+
+
 # --------------------
 # Admin Routes (Add these to your existing admin routes section)
 # --------------------
@@ -348,98 +367,212 @@ def manage_exams_admin():
 def admin_leaderboard():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
-    
+
+    exam_id = request.args.get('exam_id', type=int)  # get exam filter from query params
+
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute('''
-        SELECT s.id, u.name as student_name, e.title as exam_title, s.score, s.attempt_number, s.submitted_at
-        FROM submissions s
-        JOIN users u ON s.student_id = u.id
-        JOIN exams e ON s.exam_id = e.id
-        ORDER BY s.score DESC, s.submitted_at ASC
-    ''')
+
+    # Get list of all exams for dropdown
+    cur.execute("SELECT id, title FROM exams ORDER BY title;")
+    exams = cur.fetchall()
+
+    # Fetch leaderboard with new sorting: score DESC, time_taken ASC, submitted_at ASC
+    if exam_id:
+        cur.execute('''
+            SELECT s.id, u.name as student_name, e.title as exam_title, s.score, 
+                   s.attempt_number, s.submitted_at, s.time_taken
+            FROM submissions s
+            JOIN users u ON s.student_id = u.id
+            JOIN exams e ON s.exam_id = e.id
+            WHERE e.id = %s
+            ORDER BY s.score DESC, 
+                     COALESCE(s.time_taken, 999999) ASC, 
+                     s.submitted_at ASC
+        ''', (exam_id,))
+    else:
+        cur.execute('''
+            SELECT s.id, u.name as student_name, e.title as exam_title, s.score, 
+                   s.attempt_number, s.submitted_at, s.time_taken
+            FROM submissions s
+            JOIN users u ON s.student_id = u.id
+            JOIN exams e ON s.exam_id = e.id
+            ORDER BY s.score DESC, 
+                     COALESCE(s.time_taken, 999999) ASC, 
+                     s.submitted_at ASC
+        ''')
+    
     leaderboard = cur.fetchall()
     conn.close()
-    return render_template('admin_leaderboard.html', leaderboard=leaderboard)
 
-@app.route('/admin/leaderboard/download')
+    return render_template(
+        'admin_leaderboard.html',
+        leaderboard=leaderboard,
+        exams=exams,
+        selected_exam=exam_id
+    )
+from io import BytesIO
+from flask import send_file, request, redirect, url_for, session
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+@app.route('/admin/leaderboard/download/pdf')
 def download_leaderboard_pdf():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
+    
+    exam_id = request.args.get('exam_id', type=int)
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('''
-        SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at
-        FROM submissions s
-        JOIN users u ON s.student_id = u.id
-        JOIN exams e ON s.exam_id = e.id
-        ORDER BY s.score DESC, s.submitted_at ASC
-    ''')
+
+    # Fixed sorting: score DESC, time_taken ASC, submitted_at ASC
+    if exam_id:
+        cur.execute('''
+            SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at, s.time_taken
+            FROM submissions s
+            JOIN users u ON s.student_id = u.id
+            JOIN exams e ON s.exam_id = e.id
+            WHERE e.id = %s
+            ORDER BY s.score DESC, COALESCE(s.time_taken, 999999) ASC, s.submitted_at ASC
+        ''', (exam_id,))
+    else:
+        cur.execute('''
+            SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at, s.time_taken
+            FROM submissions s
+            JOIN users u ON s.student_id = u.id
+            JOIN exams e ON s.exam_id = e.id
+            ORDER BY s.score DESC, COALESCE(s.time_taken, 999999) ASC, s.submitted_at ASC
+        ''')
+    
     data = cur.fetchall()
     conn.close()
 
     buffer = BytesIO()
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, height-50, "Leaderboard Report")
-    c.setFont("Helvetica", 12)
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    elements = []
+    styles = getSampleStyleSheet()
 
-    y = height - 80
-    c.drawString(50, y, "S.No")
-    c.drawString(90, y, "Student Name")
-    c.drawString(250, y, "Exam Title")
-    c.drawString(370, y, "Score")
-    c.drawString(430, y, "Attempt")
-    c.drawString(490, y, "Submitted At")
-    y -= 20
+    # Title
+    elements.append(Paragraph("Leaderboard Report", styles['Title']))
+    elements.append(Spacer(1, 12))
 
+    # Table header + data
+    table_data = [["S.No", "Student Name", "Exam Title", "Score", "Attempt", "Submitted At", "Time Taken"]]
     for idx, row in enumerate(data, start=1):
-        c.drawString(50, y, str(idx))
-        c.drawString(90, y, str(row[0]))
-        c.drawString(250, y, str(row[1]))
-        c.drawString(370, y, str(row[2]))
-        c.drawString(430, y, str(row[3]))
-        c.drawString(490, y, str(row[4].strftime('%Y-%m-%d %H:%M')))
-        y -= 20
-        if y < 50:
-            c.showPage()
-            y = height - 50
+        submitted_at_str = row[4].strftime('%Y-%m-%d %H:%M') if row[4] else "Not Submitted"
+        time_taken_str = f"{row[5] // 60}m {row[5] % 60}s" if row[5] else "-"
+        table_data.append([idx, row[0], row[1], row[2], row[3], submitted_at_str, time_taken_str])
 
-    c.save()
+    # Table styling
+    table = Table(table_data, repeatRows=1)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#4FACFE")),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+        ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0,0), (-1,0), 11),
+        ('BOTTOMPADDING', (0,0), (-1,0), 10),
+        ('BACKGROUND', (0,1), (-1,-1), colors.whitesmoke),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+    ]))
+    elements.append(table)
+
+    doc.build(elements)
     buffer.seek(0)
-    return send_file(buffer, as_attachment=True, download_name="leaderboard.pdf", mimetype='application/pdf')
 
-
-import pandas as pd
-from flask import send_file
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="leaderboard.pdf",
+        mimetype="application/pdf"
+    )
+import openpyxl
+from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
 from io import BytesIO
+from flask import send_file, request, redirect, url_for, session
 
-@app.route('/admin/leaderboard/excel')
+@app.route('/admin/leaderboard/download/excel')
 def download_leaderboard_excel():
     if session.get('role') != 'admin':
         return redirect(url_for('login'))
 
+    exam_id = request.args.get('exam_id', type=int)
+
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute('''
-        SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at
-        FROM submissions s
-        JOIN users u ON s.student_id = u.id
-        JOIN exams e ON s.exam_id = e.id
-        ORDER BY s.score DESC, s.submitted_at ASC
-    ''')
+
+    # Fixed sorting: score DESC, time_taken ASC, submitted_at ASC
+    if exam_id:
+        cur.execute('''
+            SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at, s.time_taken
+            FROM submissions s
+            JOIN users u ON s.student_id = u.id
+            JOIN exams e ON s.exam_id = e.id
+            WHERE e.id = %s
+            ORDER BY s.score DESC, COALESCE(s.time_taken, 999999) ASC, s.submitted_at ASC
+        ''', (exam_id,))
+    else:
+        cur.execute('''
+            SELECT u.name, e.title, s.score, s.attempt_number, s.submitted_at, s.time_taken
+            FROM submissions s
+            JOIN users u ON s.student_id = u.id
+            JOIN exams e ON s.exam_id = e.id
+            ORDER BY s.score DESC, COALESCE(s.time_taken, 999999) ASC, s.submitted_at ASC
+        ''')
+    
     data = cur.fetchall()
     conn.close()
 
-    df = pd.DataFrame(data, columns=['Student Name','Exam Title','Score','Attempt','Submitted At'])
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Leaderboard"
+
+    headers = ["S.No", "Student Name", "Exam Title", "Score", "Attempt", "Submitted At", "Time Taken"]
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4FACFE", end_color="4FACFE", fill_type="solid")
+    alignment = Alignment(horizontal="center", vertical="center")
+    thin_border = Border(left=Side(style="thin"), right=Side(style="thin"),
+                         top=Side(style="thin"), bottom=Side(style="thin"))
+
+    # Header row
+    for col, header in enumerate(headers, start=1):
+        cell = ws.cell(row=1, column=col, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = alignment
+        cell.border = thin_border
+
+    # Data rows
+    for idx, row in enumerate(data, start=1):
+        submitted_at_str = row[4].strftime('%Y-%m-%d %H:%M') if row[4] else "Not Submitted"
+        time_taken_str = f"{row[5] // 60}m {row[5] % 60}s" if row[5] else "-"
+        ws.append([idx, row[0], row[1], row[2], row[3], submitted_at_str, time_taken_str])
+
+    # Apply alignment & borders to all data cells
+    for row_cells in ws.iter_rows(min_row=2, max_row=ws.max_row, min_col=1, max_col=len(headers)):
+        for cell in row_cells:
+            cell.alignment = alignment
+            cell.border = thin_border
+
+    # Adjust column widths
+    for col in ws.columns:
+        max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+        ws.column_dimensions[col[0].column_letter].width = max_length + 4
+
     buffer = BytesIO()
-    df.to_excel(buffer, index=False)
+    wb.save(buffer)
     buffer.seek(0)
 
-    return send_file(buffer, as_attachment=True, download_name="leaderboard.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="leaderboard.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    
 @app.route('/admin/bulk_upload', methods=['GET', 'POST'])
 def admin_bulk_upload():
     if session.get('role') != 'admin':
@@ -750,6 +883,9 @@ def student_home():
     conn.close()
     return render_template('student_home.html', exam_infos=exam_infos, name=session.get('name'))
 
+from datetime import datetime
+import json
+
 @app.route('/student/take_exam/<int:exam_id>', methods=['GET','POST'])
 def take_exam(exam_id):
     if session.get('role') != 'student': 
@@ -777,25 +913,42 @@ def take_exam(exam_id):
         conn.close()
         return redirect(url_for('student_home'))
 
-    if request.method=='POST':
+    if request.method == 'POST':
         answers = {}
         for q in questions:
             val = request.form.get(f"q{q['id']}")
             answers[str(q['id'])] = val
-        score = sum(1 for q in questions if answers.get(str(q['id']))==q['answer'])
+
+        # calculate score
+        score = sum(1 for q in questions if answers.get(str(q['id'])) == q['answer'])
         attempt_number = prev_attempts + 1
         submitted_at = datetime.now()
-        cur.execute('INSERT INTO submissions (exam_id, student_id, answers, score, attempt_number, submitted_at) VALUES (%s,%s,%s,%s,%s,%s)',
-                    (exam_id, uid, json.dumps(answers), score, attempt_number, submitted_at))
+
+        # ⏱ fetch time_taken from hidden field (set by JS timer)
+        time_taken = request.form.get('time_taken', type=int)
+
+        cur.execute('''
+            INSERT INTO submissions 
+            (exam_id, student_id, answers, score, attempt_number, submitted_at, time_taken)
+            VALUES (%s,%s,%s,%s,%s,%s,%s)
+        ''', (exam_id, uid, json.dumps(answers), score, attempt_number, submitted_at, time_taken))
+
         conn.commit()
         cur.close()
         conn.close()
-        flash(f'Exam submitted successfully!')
+        flash('Exam submitted successfully!')
         return redirect(url_for('student_home'))
 
     cur.close()
     conn.close()
-    return render_template('take_exam.html', exam=exam, questions=questions, tab_limit=TAB_SWITCH_LIMIT, exam_duration=exam['duration'])
+    return render_template(
+        'take_exam.html',
+        exam=exam,
+        questions=questions,
+        tab_limit=TAB_SWITCH_LIMIT,
+        exam_duration=exam['duration']
+    )
+
 
 # --------------------
 # Run

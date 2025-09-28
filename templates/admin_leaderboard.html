@@ -90,6 +90,19 @@
         transform: scale(1.05) rotate(-1deg);
       }
 
+      /* Filter section */
+      .filter-section {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .filter-section select {
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: none;
+        font-size: 1em;
+      }
+
       /* DataTable styling */
       table.dataTable {
         width: 100%;
@@ -180,11 +193,28 @@
       </div>
     </div>
 
+    <!-- Exam Filter -->
+    <div class="filter-section">
+      <form method="get" action="{{ url_for('admin_leaderboard') }}">
+        <label for="exam_id" style="color:white; font-weight:500; margin-right:10px;">
+          Filter by Exam:
+        </label>
+        <select name="exam_id" id="exam_id" onchange="this.form.submit()">
+          <option value="">-- All Exams --</option>
+          {% for exam in exams %}
+            <option value="{{ exam.id }}" {% if exam.id == selected_exam %}selected{% endif %}>
+              {{ exam.title }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+
     <div class="download-buttons">
-      <a href="{{ url_for('download_leaderboard_pdf') }}" target="_blank"
+      <a href="{{ url_for('download_leaderboard_pdf', exam_id=selected_exam) }}" target="_self"
         >Download PDF</a
       >
-      <a href="{{ url_for('download_leaderboard_excel') }}" target="_blank"
+      <a href="{{ url_for('download_leaderboard_excel', exam_id=selected_exam) }}" target="_self"
         >Download Excel</a
       >
     </div>
@@ -198,6 +228,7 @@
           <th>Score</th>
           <th>Attempt</th>
           <th>Submitted At</th>
+          <th>Time Taken</th>
         </tr>
       </thead>
       <tbody>
@@ -208,23 +239,34 @@
           <td>{{ row.exam_title }}</td>
           <td>{{ row.score }}</td>
           <td>{{ row.attempt_number }}</td>
-          <td>{{ row.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            {% if row.submitted_at %}
+              {{ row.submitted_at.strftime('%Y-%m-%d %H:%M') }}
+            {% else %}
+              Not Submitted
+            {% endif %}
+          </td>
+          <td>
+            {% if row.time_taken %}
+              {{ row.time_taken // 60 }}m {{ row.time_taken % 60 }}s
+            {% else %}
+              0m 0s
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
 
     <script>
-      $(document).ready(function () {
-        $("#leaderboard").DataTable({
-          order: [[3, "desc"]],
-          pageLength: 10,
-          lengthMenu: [5, 10, 20, 50],
-          columnDefs: [
-            { orderable: false, targets: 0 }, // S.No not sortable
-          ],
-        });
-      });
-    </script>
+  $(document).ready(function () {
+    $("#leaderboard").DataTable({
+      ordering: false,   // disable all column sorting
+      pageLength: 10,
+      lengthMenu: [5, 10, 20, 50]
+    });
+  });
+</script>
+
   </body>
 </html>

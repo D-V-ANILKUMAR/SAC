@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,27 +8,213 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/style.css') }}"
     />
+    <style>
+      /* Base */
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(to bottom, #f0f4f8, #d9e2ec);
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+      }
+
+      /* Mobile Menu Toggle */
+      .menu-toggle {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        width: 30px;
+        height: 22px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        z-index: 1000;
+      }
+      .menu-toggle span {
+        display: block;
+        height: 4px;
+        width: 100%;
+        background-color: #4a90e2;
+        border-radius: 2px;
+        transition: all 0.3s ease;
+      }
+
+      /* Mobile Navigation */
+      .mobile-nav {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 70%;
+        height: 100%;
+        background: #4a90e2;
+        padding: 3rem 1rem;
+        transition: left 0.3s ease;
+        z-index: 999;
+      }
+      .mobile-nav ul {
+        list-style: none;
+        padding: 0;
+      }
+      .mobile-nav li {
+        margin: 1.5rem 0;
+      }
+      .mobile-nav a {
+        text-decoration: none;
+        color: #fff;
+        font-size: 1.2rem;
+        transition: color 0.3s ease;
+      }
+      .mobile-nav a:hover {
+        color: #ffd700;
+      }
+
+      /* Flash Messages */
+      .flash {
+        list-style: none;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        background: #fffae6;
+        border-left: 4px solid #ffd700;
+        border-radius: 8px;
+        color: #333;
+        font-weight: 500;
+      }
+
+      /* Cards / Content Sections */
+      .cards-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+      @media (min-width: 640px) {
+        .cards-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      @media (min-width: 1024px) {
+        .cards-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      .card {
+        padding: 1.5rem;
+        border-radius: 1rem;
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      /* Buttons */
+      .btn {
+        padding: 0.8rem 1.5rem;
+        border-radius: 0.75rem;
+        border: none;
+        font-weight: 600;
+        color: #fff;
+        background: linear-gradient(to right, #4a90e2, #357ab8);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .btn:hover {
+        background: linear-gradient(to right, #357ab8, #2a5d8f);
+        transform: translateY(-2px);
+      }
+      .logout {
+        background: #c0392b;
+      }
+      /* Headings */
+      h1,
+      h2,
+      h3 {
+        color: #1f3a93;
+      }
+
+      /* Responsive */
+      @media (min-width: 768px) {
+        .mobile-nav {
+          display: none;
+        }
+        .menu-toggle {
+          display: none;
+        }
+      }
+    </style>
   </head>
   <body>
     <!-- Mobile Menu Toggle -->
-    <button class="menu-toggle">
+    <button class="menu-toggle" aria-label="Open Menu">
       <span></span>
       <span></span>
       <span></span>
     </button>
 
-    <!-- Main content -->
-    <div class="main-content container">
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+      <ul>
+        <li><a>Home</a></li>
+
+        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+      </ul>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
       {% with messages = get_flashed_messages() %} {% if messages %}
       <ul class="flash">
         {% for m in messages %}
         <li>{{ m }}</li>
         {% endfor %}
       </ul>
-      {% endif %} {% endwith %} {% block content %}{% endblock %}
+      {% endif %} {% endwith %} {% block content %}
+      <!-- Add your content or cards here -->
+      <div class="cards-grid">
+        <div
+          class="card"
+          style="background: linear-gradient(to top right, #4caf50, #81c784)"
+        >
+          <h3>Card One</h3>
+          <p>Green gradient card for general info.</p>
+        </div>
+        <div
+          class="card"
+          style="background: linear-gradient(to top right, #9c27b0, #ba68c8)"
+        >
+          <h3>Card Two</h3>
+          <p>Purple gradient card for events.</p>
+        </div>
+        <div
+          class="card"
+          style="background: linear-gradient(to top right, #ff5722, #ff8a65)"
+        >
+          <h3>Card Three</h3>
+          <p>Orange gradient card for announcements.</p>
+        </div>
+      </div>
+      {% endblock %}
     </div>
 
-    <!-- Mobile Navigation Script -->
-    <script src="{{ url_for('static', filename='js/mobile_nav.js') }}"></script>
+    <script>
+      // Mobile nav toggle
+      const menuToggle = document.querySelector(".menu-toggle");
+      const mobileNav = document.querySelector(".mobile-nav");
+      menuToggle.addEventListener("click", () => {
+        mobileNav.style.left = mobileNav.style.left === "0px" ? "-100%" : "0px";
+      });
+    </script>
   </body>
 </html>

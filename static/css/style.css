@@ -1,447 +1,211 @@
+/* Modern Theme Colors */
+:root {
+  --primary-gradient: linear-gradient(135deg, #2193b0, #6dd5ed);
+  --secondary-gradient: linear-gradient(135deg, #4b6cb7, #182848);
+  --success-gradient: linear-gradient(135deg, #11998e, #38ef7d);
+  --card-gradient-1: linear-gradient(135deg, #00b4db, #0083b0);
+  --card-gradient-2: linear-gradient(135deg, #fc4a1a, #f7b733);
+  --card-gradient-3: linear-gradient(135deg, #7f7fd5, #86a8e7, #91eae4);
+}
+
+/* Enhanced Body Background */
 body {
-  display: flex;       /* Enable flex layout for entire page */
-  flex-wrap: wrap;     /* Allow items to wrap onto next line */
-  gap: 10px;           /* Space between elements */
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body > * {
-  flex: 1 1 300px;     /* flex-grow:1, flex-shrink:1, flex-basis:300px */
-  box-sizing: border-box;
-  padding: 10px;
-  background: #f0f0f0;
-  margin-bottom: 10px;
-}
-
-
-/* ==========================
-   Mobile Navigation
-========================== */
-.menu-toggle {
-  display: block;
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 1000;
-  width: 30px;
-  height: 22px;
-  cursor: pointer;
-  padding: 0;
-  background: transparent;
-  border: none;
-}
-
-.menu-toggle span {
-  display: block;
-  position: absolute;
-  height: 3px;
-  width: 100%;
-  background: #333;
-  border-radius: 3px;
-  transition: all 0.3s ease;
-}
-
-.menu-toggle span:nth-child(1) {
-  top: 0;
-}
-.menu-toggle span:nth-child(2) {
-  top: 9px;
-}
-.menu-toggle span:nth-child(3) {
-  top: 18px;
-}
-
-.menu-toggle.active span:nth-child(1) {
-  transform: rotate(45deg);
-  top: 9px;
-}
-
-.menu-toggle.active span:nth-child(2) {
-  opacity: 0;
-}
-
-.menu-toggle.active span:nth-child(3) {
-  transform: rotate(-45deg);
-  top: 9px;
-}
-
-@media screen and (min-width: 768px) {
-  .menu-toggle {
-    display: none;
-  }
-}
-
-/* Mobile sidebar */
-@media screen and (max-width: 767px) {
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: -100%;
-    width: 80%;
-    max-width: 300px;
-    height: 100vh;
-    z-index: 999;
-    transition: left 0.3s ease;
-  }
-
-  .sidebar.active {
-    left: 0;
-  }
-}
-
-/* ==========================
-   Reset & Body
-========================== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: 16px;
-}
-
-body {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) fixed;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f4f6f9;
-  color: #333;
-  line-height: 1.6;
-  overflow-x: hidden;
+  color: #2c3e50;
 }
 
-/* Sidebar layout (screenshot style) */
-.app-shell {
-  display: flex;
-  min-height: 100vh;
-  flex-direction: column;
-}
-
+/* Modern Sidebar */
 .sidebar {
-  background: linear-gradient(180deg, #0d47a1 0%, #0b3a91 100%);
-  color: #fff;
-  padding: 1rem;
+  background: var(--secondary-gradient);
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar a {
-  color: #fff;
-  display: block;
-  padding: 0.5rem;
-  font-size: 1rem;
-}
-
-.main-area {
-  flex: 1;
-  padding: 1rem;
-  background: linear-gradient(180deg, #eaf6ff, #f4f6f9);
-}
-
-/* Desktop styles */
-@media screen and (min-width: 768px) {
-  .app-shell {
-    flex-direction: row;
-  }
-
-  .sidebar {
-    width: 220px;
-    min-height: 100vh;
-    padding: 1.25rem;
-  }
-
-  .main-area {
-    padding: 1.875rem;
-  }
-
-  .sidebar a {
-    padding: 0.5rem 0;
-  }
-}
-
-/* ==========================
-   Container
-========================== */
-.container {
-  width: 95%;
-  max-width: 900px;
-  margin: 1rem auto;
-  background: #fff;
-  padding: 1rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-}
-
-@media screen and (min-width: 768px) {
-  .container {
-    margin: 1.875rem auto;
-    padding: 1.875rem 2.5rem;
-  }
-}
-
-/* ==========================
-   Headings
-========================== */
-h2,
-h3,
-h4 {
-  margin-bottom: 1.25rem;
-  color: #333;
-  word-wrap: break-word;
-}
-
-/* ==========================
-   Forms
-========================== */
-form {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-form input[type="text"],
-form input[type="email"],
-form input[type="password"],
-form input[type="number"] {
-  width: 100%;
-  padding: 0.75rem;
-  margin: 0.5rem 0;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  transition: border-color 0.3s;
-  font-size: 1rem;
-}
-
-form input:focus {
-  border-color: #4caf50;
-  outline: none;
-}
-
-form label {
-  display: block;
-  margin: 0.625rem 0 0.3125rem;
-  font-weight: bold;
-  font-size: 1rem;
-}
-
-form button {
-  width: 100%;
-  background-color: #4caf50;
-  color: #fff;
-  padding: 0.75rem 1.5625rem;
-  margin-top: 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.3s;
-}
-
-@media screen and (min-width: 768px) {
-  form button {
-    width: auto;
-  }
-}
-
-form button:hover {
-  background-color: #45a049;
-}
-
-/* Dark login card (from screenshot) */
-.login-card {
-  max-width: 420px;
-  margin: 60px auto;
-  background: linear-gradient(180deg, #071021, #0b1a2b);
-  padding: 30px;
-  border-radius: 12px;
-  color: #fff;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-}
-.login-card input {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: #fff;
-}
-.login-card button {
-  background: linear-gradient(90deg, #a8ff78, #78ffd6);
-  color: #052;
-}
-
-/* ==========================
-   Links
-========================== */
-a {
-  color: #4caf50;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-/* ==========================
-   Flash Messages
-========================== */
-ul.flash {
-  list-style: none;
-  background-color: #ffbaba;
-  color: #d8000c;
-  padding: 10px 15px;
-  border-radius: 6px;
-  margin-bottom: 20px;
-}
-
-/* ==========================
-   Tables
-========================== */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  margin-top: 1rem;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-th,
-td {
-  border: 1px solid #ddd;
-  padding: 0.75rem;
-  text-align: left;
-  font-size: 0.875rem;
-}
-
-@media screen and (min-width: 768px) {
-  th,
-  td {
-    font-size: 1rem;
-  }
-}
-
-th {
-  background-color: #4caf50;
   color: white;
-  white-space: nowrap;
-}
-
-/* ==========================
-   Dashboard Cards
-========================== */
-.dashboard {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-@media screen and (min-width: 480px) {
-  .dashboard {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media screen and (min-width: 768px) {
-  .dashboard {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1.25rem;
-    margin-top: 1.875rem;
-  }
-}
-
-.card {
-  background: #4caf50;
-  color: #fff;
-  padding: 1.5625rem 0.9375rem;
+  margin: 12px 0;
+  padding: 12px 20px;
   border-radius: 10px;
-  text-align: center;
-  cursor: pointer;
-  transition: transform 0.3s, box-shadow 0.3s;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(5px) scale(1.02);
+}
+
+/* Enhanced Container */
+.container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  border-radius: 20px;
+  padding: 2rem;
+}
+
+/* Modern Cards */
+.card {
+  background: var(--card-gradient-1);
+  border-radius: 15px;
+  padding: 25px;
+  color: white;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  transition: all 0.3s ease;
+}
+
+.card:nth-child(2n) {
+  background: var(--card-gradient-2);
+}
+.card:nth-child(3n) {
+  background: var(--card-gradient-3);
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
-.card a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
-  display: block;
-  margin-top: 10px;
-  font-size: 16px;
+/* Enhanced Forms */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="number"],
+form select,
+form textarea {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(99, 179, 237, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* Exam thumbnail inside question or card */
-.thumbnail {
+form input:focus,
+form select:focus,
+form textarea:focus {
+  transform: translateY(-2px);
+  border-color: #63b3ed;
+  box-shadow: 0 5px 15px rgba(99, 179, 237, 0.2);
+}
+
+/* Modern Buttons */
+button,
+.btn {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+button:hover,
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Enhanced Tables */
+.table-responsive {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+}
+
+table th {
+  background: var(--secondary-gradient);
+  color: white;
+  padding: 15px;
+  font-weight: 600;
+}
+
+table td {
+  padding: 12px 15px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Modern Login Card */
+.login-card {
+  background: var(--secondary-gradient);
+  border-radius: 20px;
+  padding: 40px;
+  color: white;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.login-card input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 12px;
+}
+
+.login-card button {
+  background: var(--success-gradient);
   width: 100%;
-  max-width: 200px;
-  border-radius: 8px;
-  display: block;
-  margin: 8px auto 0 auto;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Subtle gradient cards for students */
-.card {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-}
-
-/* ==========================
-   Exam Form
-========================== */
-#examForm {
   margin-top: 20px;
 }
 
+/* Exam Interface */
 #examForm .question {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
   margin-bottom: 20px;
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: #f9f9f9;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
-#examForm input[type="radio"] {
-  margin-right: 10px;
+.option-item {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px 15px;
+  margin: 8px 0;
+  transition: all 0.3s ease;
 }
 
-/* ==========================
-   Buttons for exams
-========================== */
-#examForm button {
-  display: block;
-  width: 100%;
+.option-item:hover {
+  background: #edf2f7;
+  transform: translateX(5px);
 }
 
-/* ==========================
-   Responsive
-========================== */
-@media (max-width: 600px) {
+/* Flash Messages */
+.flash {
+  background: linear-gradient(135deg, #ff6b6b, #feca57);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin: 20px 0;
+  box-shadow: 0 5px 15px rgba(255, 107, 107, 0.2);
+}
+
+/* Enhanced Navigation */
+.menu-toggle {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Improvements */
+@media (max-width: 768px) {
   .container {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  .card {
+    margin: 10px 0;
+  }
+
+  .login-card {
     margin: 20px;
-    padding: 20px;
+    padding: 25px;
   }
-
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Danger button */
-.btn-danger {
-  background: #e53935;
-  color: #fff;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.btn-danger:hover {
-  background: #d32f2f;
 }

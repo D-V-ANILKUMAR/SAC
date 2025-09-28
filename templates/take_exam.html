@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "layout.html" %} 
 {% block content %}
 <style>
   body {
@@ -29,7 +29,7 @@
     font-weight: bold;
     padding: 10px 16px;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 1000;
     transition: background 0.3s ease;
   }
@@ -39,7 +39,7 @@
     padding: 20px;
     border-radius: 16px;
     margin-bottom: 20px;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   }
 
   .options input {
@@ -86,20 +86,27 @@
     <div id="progress-bar"></div>
   </div>
 
-  <form method="POST" id="examForm">
+  <form method="POST" id="examForm" target="_self">
+    
+    <!-- hidden field for actual time taken -->
+    <input type="hidden" name="time_taken" id="time_taken"/>
+
     {% for q in questions %}
-      <div class="question-card">
-        <h4>Q{{ loop.index }}: {{ q.question }}</h4>
-        {% if q.image %}
-          <img src="{{ url_for('static', filename='uploads/' + q.image) }}" style="max-width:100%; margin:10px 0"/>
-        {% endif %}
-        <div class="options">
-          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option1|e }}" required> {{ q.option1 }}</label><br>
-          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option2|e }}"> {{ q.option2 }}</label><br>
-          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option3|e }}"> {{ q.option3 }}</label><br>
-          <label><input type="radio" name="q{{ q.id }}" value="{{ q.option4|e }}"> {{ q.option4 }}</label>
-        </div>
+    <div class="question-card">
+      <h4>Q{{ loop.index }}: {{ q.question }}</h4>
+      {% if q.image %}
+      <img
+        src="{{ url_for('static', filename='uploads/' + q.image) }}"
+        style="max-width: 100%; margin: 10px 0"
+      />
+      {% endif %}
+      <div class="options">
+        <label><input type="radio" name="q{{ q.id }}" value="{{ q.option1|e }}" required /> {{ q.option1 }}</label><br />
+        <label><input type="radio" name="q{{ q.id }}" value="{{ q.option2|e }}" /> {{ q.option2 }}</label><br />
+        <label><input type="radio" name="q{{ q.id }}" value="{{ q.option3|e }}" /> {{ q.option3 }}</label><br />
+        <label><input type="radio" name="q{{ q.id }}" value="{{ q.option4|e }}" /> {{ q.option4 }}</label>
       </div>
+    </div>
     {% endfor %}
     <button type="submit" class="submit-btn">Submit Exam</button>
   </form>
@@ -111,7 +118,7 @@
   const progressBar = document.getElementById("progress-bar");
   const questionIDs = [{% for q in questions %}{{ q.id }}{% if not loop.last %}, {% endif %}{% endfor %}];
 
-  // Disable copy/cut/drag/drop
+  // Disable copy/cut/right-click
   document.addEventListener('copy', e => e.preventDefault());
   document.addEventListener('cut', e => e.preventDefault());
   document.addEventListener('contextmenu', e => e.preventDefault());
@@ -129,26 +136,42 @@
 
   form.querySelectorAll('input[type="radio"]').forEach(r => r.addEventListener('change', updateProgress));
 
+  // Timer logic
   function startTimer(durationMinutes) {
+    const startTime = Date.now();
     let timer = durationMinutes * 60;
+
     const countdown = setInterval(() => {
-      const minutes = Math.floor(timer / 60);
-      const seconds = timer % 60;
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000); // in seconds
+      const remaining = timer - elapsed;
+
+      const minutes = Math.floor(Math.max(remaining,0) / 60);
+      const seconds = Math.max(remaining,0) % 60;
+
       timerDisplay.textContent = `Time Left: ${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-      if (timer <= 60) timerDisplay.style.background = '#e3342f';
-      if (--timer < 0) {
+
+      if (remaining <= 60) timerDisplay.style.background = '#e3342f';
+
+      if (remaining <= 0) {
         clearInterval(countdown);
         alert("⏰ Time is up! Exam will be submitted automatically.");
+        // set time_taken before auto-submit
+        document.getElementById("time_taken").value = elapsed;
         form.submit();
       }
     }, 1000);
-  }
 
-  form.addEventListener("submit", function() {
-    const btn = this.querySelector("button[type=submit]");
-    btn.disabled = true;
-    btn.innerText = "Submitting...";
-  });
+    // On manual submit, capture time_taken
+    form.addEventListener("submit", function() {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      document.getElementById("time_taken").value = elapsed;
+
+      const btn = this.querySelector("button[type=submit]");
+      btn.disabled = true;
+      btn.innerText = "Submitting...";
+    });
+  }
 
   startTimer({{ exam.duration|tojson }});
 
@@ -166,6 +189,7 @@
       disqualInput.name = 'disqualified';
       disqualInput.value = '1';
       form.appendChild(disqualInput);
+      document.getElementById("time_taken").value = Math.floor((Date.now() - startTime) / 1000);
       form.submit();
     }
   });
