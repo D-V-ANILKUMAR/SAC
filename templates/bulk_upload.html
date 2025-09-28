@@ -1,0 +1,193 @@
+{% extends "layout.html" %} {% block content %}
+<div class="container">
+  <h2>Bulk Create Accounts</h2>
+
+  <div class="info-section">
+    <h3>Instructions</h3>
+    <ul>
+      <li>Upload a CSV or Excel file containing user information</li>
+      <li>
+        Required columns:
+        <ul>
+          <li><code>email</code></li>
+          <li><code>password</code></li>
+        </ul>
+      </li>
+      <li>
+        Optional columns:
+        <ul>
+          <li><code>name</code></li>
+          <li><code>mobile</code></li>
+          <li><code>role</code> (defaults to student)</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div class="upload-section">
+    <form
+      action="{{ url_for('admin_bulk_upload') }}"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      <div class="file-input">
+        <label for="file">Select File:</label>
+        <input
+          type="file"
+          id="file"
+          name="file"
+          accept=".csv, .xls, .xlsx"
+          required
+        />
+        <small>Supported formats: CSV, XLS, XLSX</small>
+      </div>
+      <button type="submit" class="submit-btn">Upload & Process</button>
+    </form>
+  </div>
+
+  <div class="sample-section">
+    <h3>Sample Format</h3>
+    <div class="code-block">
+      <h4>Example headers:</h4>
+      <pre>email,name,mobile,password,role</pre>
+      <h4>Example data:</h4>
+      <pre>
+student1@example.com,John Doe,1234567890,pass123,student
+mediator1@example.com,Jane Smith,9876543210,pass456,mediator</pre
+      >
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Container Styling */
+  .container {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Headings */
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 2rem;
+    position: relative;
+  }
+  h2::after {
+    content: "";
+    width: 60px;
+    height: 4px;
+    background: #4caf50;
+    display: block;
+    margin: 10px auto 0;
+    border-radius: 2px;
+  }
+  h3 {
+    color: #4caf50;
+    margin-bottom: 15px;
+  }
+
+  /* Info Section */
+  .info-section ul {
+    list-style: disc inside;
+    line-height: 1.6;
+  }
+  .info-section ul ul {
+    margin-top: 5px;
+    list-style-type: circle;
+  }
+
+  /* File Input Styling */
+  .file-input {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  input[type="file"] {
+    padding: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    transition: border 0.3s ease, background 0.3s ease;
+    cursor: pointer;
+  }
+  input[type="file"]:hover {
+    border-color: #4caf50;
+    background: #f9fff9;
+  }
+
+  /* Submit Button Styling */
+  .submit-btn {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    color: #fff;
+    padding: 14px 28px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #43a047, #57b757);
+  }
+
+  /* Code Block Styling */
+  .code-block {
+    background: #f7f9fc;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #4caf50;
+    overflow-x: auto;
+    transition: transform 0.2s ease;
+  }
+  .code-block:hover {
+    transform: translateX(5px);
+  }
+  pre {
+    background: #eef2f7;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+  }
+  code {
+    background: #e0e0e0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.95rem;
+  }
+
+  /* Small Text */
+  small {
+    color: #666;
+    font-size: 0.85rem;
+  }
+
+  /* Smooth scrolling for overflow content */
+  ::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #4caf50;
+  }
+</style>
+{% endblock %}

@@ -104,6 +104,10 @@
       <a href="{{ url_for('create_student_admin') }}" class="student-create"
         >Create Student</a
       >
+      <!-- Bulk Upload Form -->
+      <a href="{{ url_for('admin_bulk_upload') }}" class="user-create"
+        >Bulk Create Users</a
+      >
     </div>
 
     <!-- Account Details Card -->
@@ -124,20 +128,17 @@
       <a href="{{ url_for('admin_submissions') }}" class="submissions"
         >View Submissions</a
       >
-          <a href="{{ url_for('admin_leaderboard') }}"class="leaderboard">Leaderboard</a>
-
+      <a href="{{ url_for('admin_leaderboard') }}" class="leaderboard"
+        >Leaderboard</a
+      >
     </div>
     
 
-   
-
-
-
-    <!-- Logout Card -->
-    <div class="dashboard-card">
-      <h3>Logout</h3>
-      <a href="{{ url_for('logout') }}" class="logout">Logout</a>
+      <!-- Logout Card -->
+      <div class="dashboard-card">
+        <h3>Logout</h3>
+        <a href="{{ url_for('logout') }}" class="logout">Logout</a>
     </div>
   </div>
+  {% endblock %}
 </div>
-{% endblock %}

@@ -299,6 +299,7 @@ def create_student_admin():
 
     return render_template('create_student_admin.html')
 
+# Admin account details
 @app.route('/admin/account_details')
 def account_details_admin():
     if session.get('role') != 'admin':
@@ -312,6 +313,25 @@ def account_details_admin():
     conn.close()
     return render_template('account_details_admin.html', users=users)
 
+# Delete user
+@app.route('/admin/delete_user', methods=['POST'])
+def delete_user():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    user_id = request.form.get('user_id')
+    if str(user_id) == str(session.get('user_id')):
+        flash("You cannot delete your own account.")
+        return redirect(url_for('account_details_admin'))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM users WHERE id = %s", (user_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash("User deleted successfully.")
+    return redirect(url_for('account_details_admin'))
 @app.route('/admin/manage_exams')
 def manage_exams_admin():
     if session.get('role') != 'admin' :
@@ -419,6 +439,85 @@ def download_leaderboard_excel():
     buffer.seek(0)
 
     return send_file(buffer, as_attachment=True, download_name="leaderboard.xlsx", mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+@app.route('/admin/bulk_upload', methods=['GET', 'POST'])
+def admin_bulk_upload():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    if request.method == 'GET':
+        return render_template('bulk_upload.html', name=session.get('name', 'Admin'))
+
+    uploaded = request.files.get('file')
+    if not uploaded or uploaded.filename == '':
+        flash("No file selected", "danger")
+        return redirect(url_for('admin_bulk_upload'))
+
+    filename = uploaded.filename.lower()
+    if not (filename.endswith('.csv') or filename.endswith('.xlsx') or filename.endswith('.xls')):
+        flash("Unsupported file type. Use CSV/XLS/XLSX.", "danger")
+        return redirect(url_for('admin_bulk_upload'))
+
+    try:
+        if filename.endswith('.csv'):
+            df = pd.read_csv(uploaded, dtype=str)
+        else:
+            df = pd.read_excel(uploaded, dtype=str)
+
+        df = df.replace({pd.NA: None, 'nan': None, 'NaN': None})
+        df.columns = [c.strip().lower() for c in df.columns]
+    except Exception as e:
+        flash(f"Error reading file: {str(e)}", "danger")
+        return redirect(url_for('admin_bulk_upload'))
+
+    required_cols = ['email', 'password']
+    for col in required_cols:
+        if col not in df.columns:
+            flash(f"Missing required column: {col}", "danger")
+            return redirect(url_for('admin_bulk_upload'))
+
+    created, failed, skipped = 0, 0, 0
+    results = []
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    for idx, row in df.iterrows():
+        try:
+            email = str(row.get('email') or '').strip()
+            password = str(row.get('password') or '').strip()
+            name = str(row.get('name') or '').strip()
+            mobile = str(row.get('mobile') or '').strip()
+            role = (row.get('role') or 'student').strip().lower()
+
+            if not email or not password:
+                skipped += 1
+                continue
+            if '@' not in email:
+                failed += 1
+                continue
+            if role not in ['student', 'mediator', 'admin']:
+                role = 'student'
+
+            cur.execute(
+                "INSERT INTO users (name, email, mobile, password, role) VALUES (%s,%s,%s,%s,%s)",
+                (name or None, email, mobile or None, password, role)
+            )
+            conn.commit()
+            created += 1
+        except psycopg2.IntegrityError:
+            conn.rollback()
+            failed += 1
+        except Exception as e:
+            conn.rollback()
+            failed += 1
+
+    cur.close()
+    conn.close()
+
+    flash(f"Upload finished: {created} created, {skipped} skipped, {failed} failed",
+          "success" if failed == 0 else "warning")
+    return redirect(url_for('admin_bulk_upload'))
+
 
 @app.route('/admin/manage_exams/edit/<int:exam_id>', methods=['GET', 'POST'])
 def edit_exam(exam_id):
@@ -691,7 +790,7 @@ def take_exam(exam_id):
         conn.commit()
         cur.close()
         conn.close()
-        flash(f'Exam submitted successfully! Score: {score}/{len(questions)}')
+        flash(f'Exam submitted successfully!')
         return redirect(url_for('student_home'))
 
     cur.close()

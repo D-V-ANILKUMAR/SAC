@@ -1,4 +1,6 @@
-{% extends "layout.html" %} {% block content %}
+{% extends "layout.html" %} 
+
+{% block content %}
 <style>
   .container {
     max-width: 1000px;
@@ -22,8 +24,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  th,
-  td {
+  th, td {
     padding: 12px 16px;
     text-align: left;
     border-bottom: 1px solid #edf2f7;
@@ -66,6 +67,20 @@
     background: #90cdf4;
     color: #2c5282;
   }
+
+  .btn-delete {
+    background-color: #e53e3e;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+
+  .btn-delete:hover {
+    background-color: #c53030;
+  }
 </style>
 
 <div class="container">
@@ -78,6 +93,7 @@
         <th>Email</th>
         <th>Mobile</th>
         <th>Role</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -91,6 +107,12 @@
           <span class="role-badge role-{{ user[5] }}">
             {{ user[5]|title }}
           </span>
+        </td>
+        <td>
+          <form method="POST" action="{{ url_for('delete_user') }}" onsubmit="return confirm('Delete this user?')">
+            <input type="hidden" name="user_id" value="{{ user[0] }}">
+            <button type="submit" class="btn-delete">Delete</button>
+          </form>
         </td>
       </tr>
       {% endfor %}

@@ -67,7 +67,7 @@ def take_exam(exam_id):
         )
         
         if success:
-            flash(f'Exam submitted successfully! Score: {score}/{len(questions)}')
+            flash(f'Exam submitted successfully!')
             return redirect(url_for('student_home'))
         else:
             flash(f'Error saving submission: {error}')
