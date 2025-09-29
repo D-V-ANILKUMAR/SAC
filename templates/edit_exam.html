@@ -1,6 +1,5 @@
-{% extends "layout.html" %}
-{% block content %}
-<div class="container" style="max-width: 900px; margin: 20px auto;">
+{% extends "layout.html" %} {% block content %}
+<div class="container" style="max-width: 900px; margin: 20px auto">
   <h2>Edit Exam</h2>
   <form method="POST">
     <h3>Exam Details</h3>
@@ -11,33 +10,75 @@
     <input type="number" name="duration" value="{{ exam[2] }}" required /><br />
 
     <label>Attempts allowed</label>
-    <input type="number" name="attempts_allowed" value="{{ exam[3] or 1 }}" min="1" /><br />
+    <input
+      type="number"
+      name="attempts_allowed"
+      value="{{ exam[3] or 1 }}"
+      min="1"
+    /><br />
 
     <hr />
 
     <h3>Questions</h3>
-{% for q in questions %}
-  <div class="question-block" style="margin-bottom:20px; padding:10px; border:1px solid #ddd; border-radius:8px;">
-    <label>Question {{ loop.index }}</label>
-    <input type="text" name="question_{{ q.id }}" value="{{ q.question }}" required /><br />
+    {% for q in questions %}
+    <div
+      class="question-block"
+      style="
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      "
+    >
+      <label>Question {{ loop.index }}</label>
+      <input
+        type="text"
+        name="question_{{ q.id }}"
+        value="{{ q.question }}"
+        required
+      /><br />
 
-    <label>Option 1</label>
-    <input type="text" name="option1_{{ q.id }}" value="{{ q.option1 }}" required /><br />
+      <label>Option 1</label>
+      <input
+        type="text"
+        name="option1_{{ q.id }}"
+        value="{{ q.option1 }}"
+        required
+      /><br />
 
-    <label>Option 2</label>
-    <input type="text" name="option2_{{ q.id }}" value="{{ q.option2 }}" required /><br />
+      <label>Option 2</label>
+      <input
+        type="text"
+        name="option2_{{ q.id }}"
+        value="{{ q.option2 }}"
+        required
+      /><br />
 
-    <label>Option 3</label>
-    <input type="text" name="option3_{{ q.id }}" value="{{ q.option3 }}" required /><br />
+      <label>Option 3</label>
+      <input
+        type="text"
+        name="option3_{{ q.id }}"
+        value="{{ q.option3 }}"
+        required
+      /><br />
 
-    <label>Option 4</label>
-    <input type="text" name="option4_{{ q.id }}" value="{{ q.option4 }}" required /><br />
+      <label>Option 4</label>
+      <input
+        type="text"
+        name="option4_{{ q.id }}"
+        value="{{ q.option4 }}"
+        required
+      /><br />
 
-    <label>Correct Answer</label>
-    <input type="text" name="answer_{{ q.id }}" value="{{ q.answer }}" required /><br />
-  </div>
-{% endfor %}
-
+      <label>Correct Answer</label>
+      <input
+        type="text"
+        name="answer_{{ q.id }}"
+        value="{{ q.answer }}"
+        required
+      /><br />
+    </div>
+    {% endfor %}
 
     <button type="submit">Save All</button>
   </form>

@@ -326,7 +326,7 @@ def account_details_admin():
 
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id,name,email,mobile,password,role FROM users")
+    cur.execute("SELECT id,name,email,mobile,password,role FROM users WHERE role='student' OR role='mediator'")
     users = cur.fetchall()
     cur.close()
     conn.close()
@@ -652,6 +652,55 @@ def admin_bulk_upload():
     return redirect(url_for('admin_bulk_upload'))
 
 
+def allowed_file(filename):
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Bulk Delete Users
+@app.route('/admin/bulk_delete_users', methods=['GET', 'POST'])
+def bulk_delete_users():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        emails_raw = request.form.get('emails')
+        if not emails_raw:
+            flash("Please provide at least one email.", "danger")
+            return redirect(url_for('bulk_delete_users'))
+
+        # Split by comma or newline
+        emails = [e.strip() for e in emails_raw.replace("\n", ",").split(",") if e.strip()]
+        if not emails:
+            flash("No valid emails provided.", "danger")
+            return redirect(url_for('bulk_delete_users'))
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                "DELETE FROM users WHERE email = ANY(%s) RETURNING email",
+                (emails,)
+            )
+            deleted = cur.fetchall()
+            conn.commit()
+
+            if deleted:
+                deleted_emails = [d[0] for d in deleted]
+                flash(f"Deleted users: {', '.join(deleted_emails)}", "success")
+            else:
+                flash("No users found with the given emails.", "warning")
+        except Exception as e:
+            conn.rollback()
+            flash(f"Error deleting users: {e}", "danger")
+        finally:
+            cur.close()
+            conn.close()
+
+        return redirect(url_for('bulk_delete_users'))
+
+    return render_template('bulk_delete_users.html')
+
+
 @app.route('/admin/manage_exams/edit/<int:exam_id>', methods=['GET', 'POST'])
 def edit_exam(exam_id):
     if session.get('role') != 'admin':
@@ -709,6 +758,35 @@ def edit_exam(exam_id):
 
     conn.close()
     return render_template("edit_exam.html", exam=exam, questions=questions)
+#---Preview Exam ---
+@app.route('/admin/preview_exam/<int:exam_id>')
+def preview_exam(exam_id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Fetch exam info
+    cur.execute("SELECT * FROM exams WHERE id=%s", (exam_id,))
+    exam = cur.fetchone()
+    if not exam:
+        conn.close()
+        flash("Exam not found", "danger")
+        return redirect(url_for("manage_exams_admin"))
+
+    # Fetch questions (image stored in the questions table)
+    cur.execute("""
+        SELECT id, question, option1, option2, option3, option4, answer, image
+        FROM questions
+        WHERE exam_id=%s
+        ORDER BY id
+    """, (exam_id,))
+    questions = cur.fetchall()
+
+    conn.close()
+    return render_template("preview_exam.html", exam=exam, questions=questions)
+
 
 # ---------- DELETE ----------
 @app.route('/admin/manage_exams/delete/<int:exam_id>')

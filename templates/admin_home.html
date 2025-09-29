@@ -49,6 +49,12 @@
   .user-create {
     background: #1d72b8;
   }
+  .bulk_user-create {
+    background: #ff00e1ff;
+  }
+  .btn btn-danger {
+    background: #0099ffff;
+  }
   .student-create {
     background: #2ecc71;
   }
@@ -107,9 +113,12 @@
       <a href="{{ url_for('create_student_admin') }}" class="student-create"
         >Create Student</a
       >
-      <a href="{{ url_for('admin_bulk_upload') }}" class="user-create"
+      <a href="{{ url_for('admin_bulk_upload') }}" class="bulk_user-create"
         >Bulk Create Users</a
       >
+      <a href="{{ url_for('bulk_delete_users') }}" class="btn btn-danger">
+        Bulk Delete Users
+    </a>
     </div>
 
     <!-- Account Details Card -->
